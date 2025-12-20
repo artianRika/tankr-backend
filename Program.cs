@@ -1,5 +1,9 @@
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using TankR.Data;
+using TankR.Mappings;
+using TankR.Repos.Implementations;
+using TankR.Repos.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +16,23 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddSingleton<IMapper>(sp =>
+{
+    var config = new MapperConfiguration(cfg =>
+    {
+        cfg.AddProfile<UserProfile>();
+    });
+
+    return config.CreateMapper();
+});
+
+builder.Services.AddScoped<IUserRepo, UserRepo>();
+builder.Services.AddScoped<IAddressRepo, AddressRepo>();
+
+// builder.Services.AddScoped<IStationRepo, StationRepo>();
+// builder.Services.AddScoped<IFuelTypeRepo, FuelTypeRepo>();
+// builder.Services.AddScoped<ITransactionRepo, TransactionRepo>();
 
 var app = builder.Build();
 
