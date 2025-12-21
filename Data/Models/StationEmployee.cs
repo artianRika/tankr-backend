@@ -1,8 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace TankR.Data.Models;
 
+[Index(nameof(StationId), nameof(UserId), IsUnique = true)]
 public class StationEmployee
 {
 

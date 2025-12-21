@@ -1,4 +1,4 @@
-using TankR.Data.Dtos.Address;
+using TankR.Data.Dtos.UserAddresses;
 using TankR.Data.Enums;
 
 public class UserDto
@@ -14,5 +14,5 @@ public class UserDto
     public UserRole Role { get; set; }
     public int LoyaltyPoints { get; set; }
     
-    public AddressDto Address { get; set; }
+    public UserAddressDto? Address { get; set; }
 }

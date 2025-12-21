@@ -1,24 +1,17 @@
-using System.ComponentModel.DataAnnotations;
 using TankR.Data.Enums;
 
-namespace TankR.Data.Models;
+namespace TankR.Data.Dtos.UserAddresses;
 
-public class Address
+public class CreateUserAddressDto
 {
-    [Key]
-    public int Id { get; set; }
-
     public string? Street { get; set; }
     public string? StreetNumber { get; set; }
-    [Required]
     public string City { get; set; }
-    [Required]
-    public int PostalCode { get; set; }
-    
+    public string PostalCode { get; set; }
     public CountryCode Country { get; set; }
 
-    [Required]
     public decimal Lat { get; set; }
-    [Required]
     public decimal Lng { get; set; }
+    
+    public int UserId { get; set; }
 }

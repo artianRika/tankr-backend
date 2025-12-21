@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TankR.Data;
@@ -11,9 +12,11 @@ using TankR.Data;
 namespace TankR.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251221163717_ImprovedAddressSchema_v2")]
+    partial class ImprovedAddressSchema_v2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -436,11 +439,13 @@ namespace TankR.Migrations
 
             modelBuilder.Entity("TankR.Data.Models.UserAddress", b =>
                 {
-                    b.HasOne("TankR.Data.Models.User", null)
+                    b.HasOne("TankR.Data.Models.User", "User")
                         .WithOne("Address")
                         .HasForeignKey("TankR.Data.Models.UserAddress", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("TankR.Data.Models.Station", b =>

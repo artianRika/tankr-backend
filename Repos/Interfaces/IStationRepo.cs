@@ -1,11 +1,13 @@
 using TankR.Data.Models;
 
+namespace TankR.Repos.Interfaces;
+
 public interface IStationRepo
 {
-    Station GetById(int id);
-    IEnumerable<Station> GetAll();
+    Task<Station?> GetById(int id);
+    Task<IEnumerable<Station>> GetAll();
 
-    void Add(Station station);
-    void Update(Station station);
+    Task Add(Station station);
+    Task Update(Station station);
 
 }

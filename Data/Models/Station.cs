@@ -10,9 +10,7 @@ public class Station
     [Required]
     public string Name { get; set; }
 
-    [Required]
-    public int AddressId { get; set; }
-    public Address Address { get; set; }
+    public StationAddress Address { get; set; }
     
     public string? LogoUrl { get; set; }
 

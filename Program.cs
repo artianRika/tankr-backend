@@ -27,10 +27,14 @@ builder.Services.AddSingleton<IMapper>(sp =>
     return config.CreateMapper();
 });
 
-builder.Services.AddScoped<IUserRepo, UserRepo>();
-builder.Services.AddScoped<IAddressRepo, AddressRepo>();
 
-// builder.Services.AddScoped<IStationRepo, StationRepo>();
+builder.Services.AddScoped<IUserRepo, UserRepo>();
+builder.Services.AddScoped<IUserAddressRepo, UserAddressRepo>();
+builder.Services.AddScoped<IStationRepo, StationRepo>();
+builder.Services.AddScoped<IStationAddressRepo, StationAddressRepo>();
+builder.Services.AddScoped<IFuelTypeRepo, FuelTypeRepo>();
+
+
 // builder.Services.AddScoped<IFuelTypeRepo, FuelTypeRepo>();
 // builder.Services.AddScoped<ITransactionRepo, TransactionRepo>();
 

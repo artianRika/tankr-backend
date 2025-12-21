@@ -1,4 +1,4 @@
-using TankR.Data.Dtos.Address;
+using TankR.Data.Dtos.UserAddresses;
 using TankR.Data.Enums;
 
 namespace TankR.Data.Dtos;
@@ -13,5 +13,5 @@ public class UserDetailsDto
     public string Email { get; set; }
     public UserRole Role { get; set; }
 
-    public AddressDto Address { get; set; }
+    public UserAddressDto Address { get; set; }
 }

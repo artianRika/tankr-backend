@@ -9,7 +9,8 @@ public class AppDbContext: DbContext
     { }
     
     public DbSet<User> Users { get; set; }
-    public DbSet<Address> Addresses { get; set; }
+    public DbSet<UserAddress> UserAddresses { get; set; }
+    public DbSet<StationAddress> StationAddresses { get; set; }
     public DbSet<Station> Stations { get; set; }
     public DbSet<FuelType> FuelTypes { get; set; }
     public DbSet<StationFuelPrice> StationFuelPrices { get; set; }

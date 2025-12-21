@@ -23,8 +23,8 @@ public class User
     
     public string? AvatarUrl { get; set; }
     
-    public int? AddressId { get; set; }
-    public Address Address { get; set; }
+    
+    public UserAddress Address { get; set; }
     
     [Required]
     public UserRole Role { get; set; }

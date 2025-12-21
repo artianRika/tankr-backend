@@ -1,6 +1,6 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using TankR.Data.Dtos.Address;
+using TankR.Data.Dtos.UserAddresses;
 using TankR.Data.Models;
 using TankR.Repos.Interfaces;
 
@@ -8,26 +8,26 @@ namespace TankR.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class AddressController: ControllerBase
+public class UserAddressController: ControllerBase
 {
-    private readonly IAddressRepo _addressRepo;
+    private readonly IUserAddressRepo _userAddressRepo;
     private readonly IUserRepo _userRepo;
     private readonly IMapper _mapper;
 
-    public AddressController(IAddressRepo addressRepo, IUserRepo userRepo, IMapper mapper)
+    public UserAddressController(IUserAddressRepo userAddressRepo, IUserRepo userRepo, IMapper mapper)
     {
-        _addressRepo = addressRepo;
+        _userAddressRepo = userAddressRepo;
         _userRepo = userRepo;
         _mapper = mapper;
     }
 
       [HttpGet]
-    public async Task<ActionResult<IEnumerable<AddressDto>>> GetAll()
+    public async Task<ActionResult<IEnumerable<UserAddressDto>>> GetAll()
     {
         try
         {
-            var addresses = await _addressRepo.GetAll();
-            var result = _mapper.Map<IEnumerable<AddressDto>>(addresses);
+            var addresses = await _userAddressRepo.GetAll();
+            var result = _mapper.Map<IEnumerable<UserAddressDto>>(addresses);
             return Ok(result);
         }
         catch (Exception e)
@@ -40,14 +40,14 @@ public class AddressController: ControllerBase
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<AddressDto>> GetById(int id)
+    public async Task<ActionResult<UserAddressDto>> GetById(int id)
     {
         try
         {
-            var address = await _addressRepo.GetById(id);
+            var address = await _userAddressRepo.GetById(id);
             if (address == null)
                 return NotFound($"Address with id {id} not found");
-            var result = _mapper.Map<AddressDto>(address);
+            var result = _mapper.Map<UserAddressDto>(address);
             return Ok(result);
         }
         catch (Exception e)
@@ -60,23 +60,18 @@ public class AddressController: ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult> Add(CreateAddressDto createAddressDto)
+    public async Task<ActionResult> Add(CreateUserAddressDto createUserAddressDto)
     {
         try
         {
-            var address = _mapper.Map<Address>(createAddressDto);
-            await _addressRepo.Add(address);
+            var address = _mapper.Map<UserAddress>(createUserAddressDto);
+            await _userAddressRepo.Add(address);
 
 
-            var user = await _userRepo.GetById(createAddressDto.UserId);
+            var user = await _userRepo.GetById(createUserAddressDto.UserId);
             if (user == null) 
-                return NotFound($"User with ID {createAddressDto.UserId} not found");
-
-            user.AddressId = address.Id;
-            user.Address = address;
-            await _userRepo.Update(user);
-
-            user.Address = address;
+                return NotFound($"User with ID {createUserAddressDto.UserId} not found");
+            
 
             var userDto = _mapper.Map<UserDto>(user);
             return CreatedAtAction(nameof(_userRepo.GetById), new { id = user.Id }, userDto);
@@ -92,18 +87,18 @@ public class AddressController: ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(int id, UpdateAddressDto updateAddressDto)
+    public async Task<ActionResult> Update(int id, UpdateUserAddressDto updateUserAddressDto)
     {
         try
         {
-            var address = await _addressRepo.GetById(id);
+            var address = await _userAddressRepo.GetById(id);
             if (address == null)
                 return NotFound();
 
-            _mapper.Map(updateAddressDto, address);
-            await _addressRepo.Update(address);
+            _mapper.Map(updateUserAddressDto, address);
+            await _userAddressRepo.Update(address);
 
-            return Ok(_mapper.Map<AddressDto>(address));
+            return Ok(_mapper.Map<UserAddressDto>(address));
         }
         catch (Exception e)
         {

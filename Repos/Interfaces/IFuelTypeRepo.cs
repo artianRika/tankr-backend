@@ -4,7 +4,11 @@ namespace TankR.Repos.Interfaces;
 
 public interface IFuelTypeRepo
 {
-    IEnumerable<FuelType> GetAll();
-    FuelType GetById(int id);
+    Task<FuelType?> GetById(int id);
+    Task<FuelType?> GetByName(string name);
+    Task<IEnumerable<FuelType>> GetAll();
+
+    Task Add(FuelType fuelType);
+    Task Update(FuelType fuelType);
 
 }
