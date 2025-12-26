@@ -1,7 +1,9 @@
+using System.Text.Json.Serialization;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using TankR.Data;
 using TankR.Mappings;
+using TankR.Repos;
 using TankR.Repos.Implementations;
 using TankR.Repos.Interfaces;
 
@@ -33,10 +35,23 @@ builder.Services.AddScoped<IUserAddressRepo, UserAddressRepo>();
 builder.Services.AddScoped<IStationRepo, StationRepo>();
 builder.Services.AddScoped<IStationAddressRepo, StationAddressRepo>();
 builder.Services.AddScoped<IFuelTypeRepo, FuelTypeRepo>();
+builder.Services.AddScoped<IStationFuelPriceRepo, StationFuelPriceRepo>();
+builder.Services.AddScoped<IStationEmployeeRepo, StationEmployeeRepo>();
+builder.Services.AddScoped<IStationPhotoRepo, StationPhotoRepo>();
+builder.Services.AddScoped<ITransactionRepo, TransactionRepo>();
 
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter()
+        );
+    });
 
-// builder.Services.AddScoped<IFuelTypeRepo, FuelTypeRepo>();
-// builder.Services.AddScoped<ITransactionRepo, TransactionRepo>();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.UseInlineDefinitionsForEnums();
+});
 
 var app = builder.Build();
 

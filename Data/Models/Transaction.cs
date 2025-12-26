@@ -11,23 +11,19 @@ public class Transaction
 
     [Required]
     public int StationId { get; set; }
-
-    [ForeignKey("StationId")]
     public Station Station { get; set; }
+
 
     [Required]
     public int CashierId { get; set; }
-
-    [ForeignKey("CashierId")]
     public User Cashier { get; set; }
 
-    public int? CustomerId { get; set; }
-
+    [Required]
+    public int CustomerId { get; set; }
     public User Customer { get; set; }
 
     [Required]
     public int FuelTypeId { get; set; }
-
     public FuelType FuelType { get; set; }
 
     [Required]

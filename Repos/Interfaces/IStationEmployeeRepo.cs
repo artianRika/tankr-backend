@@ -1,14 +1,15 @@
+using TankR.Data.Dtos.StationEmployees;
 using TankR.Data.Models;
 
 namespace TankR.Repos.Interfaces;
 
 public interface IStationEmployeeRepo
 {
-    bool Exists(int stationId, int userId);
+    Task<Boolean> Exists(int stationId, int userId);
 
-    void Assign(int stationId, int userId);
-    void Remove(int stationId, int userId);
+    Task Assign(StationEmployee stationEmployee);
+    Task Remove(int stationId, int userId);
 
-    IEnumerable<User> GetEmployeesByStation(int stationId);
+    Task<IEnumerable<StationEmployee>?> GetEmployeesByStation(int stationId);
 
 }

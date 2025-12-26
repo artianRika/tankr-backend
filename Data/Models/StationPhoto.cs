@@ -1,8 +1,10 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace TankR.Data.Models;
 
 
+[Index(nameof(ImagePath), IsUnique = true)]
 public class StationPhoto
 {
     [Key]

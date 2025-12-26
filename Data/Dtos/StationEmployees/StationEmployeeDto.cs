@@ -4,4 +4,5 @@ public class StationEmployeeDto
 {
     public int StationId { get; set; }
     public int UserId { get; set; }
+    public UserDto User { get; set; }
 }

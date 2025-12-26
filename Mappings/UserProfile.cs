@@ -1,7 +1,11 @@
 using AutoMapper;
 using TankR.Data.Dtos.FuelTypes;
 using TankR.Data.Dtos.StationAddresses;
+using TankR.Data.Dtos.StationEmployees;
+using TankR.Data.Dtos.StationFuelPrices;
+using TankR.Data.Dtos.StationPhotos;
 using TankR.Data.Dtos.Stations;
+using TankR.Data.Dtos.Transactions;
 using TankR.Data.Dtos.UserAddresses;
 using TankR.Data.Models;
 
@@ -38,5 +42,24 @@ public class UserProfile : Profile
         CreateMap<FuelType, FuelTypeDto>();
         CreateMap<CreateFuelTypeDto, FuelType>();
         CreateMap<UpdateFuelTypeDto, FuelType>();
+        
+        
+        //StationFuelPrices
+        CreateMap<StationFuelPrice, StationFuelPriceDto>();
+        
+        
+        //StationEmployees
+        CreateMap<StationEmployee, StationEmployeeDto>();
+        CreateMap<AssignEmployeeDto, StationEmployee>();
+        
+        
+        //StationPhotos
+        CreateMap<StationPhoto, StationPhotoDto>();
+        CreateMap<CreateStationPhotoDto, StationPhoto>();
+        
+        
+        //Transactions
+        CreateMap<Transaction, TransactionDto>();
+        CreateMap<CreateTransactionDto, Transaction>();
     }
 }
