@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using TankR.Data.Models.Identity;
 using TankR.Repos.Interfaces;
@@ -11,13 +12,21 @@ public class TokenService
     private string? _issuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
     private string? _audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
     
+    public readonly UserManager<ApplicationUser> _userManager;
     public const int ExpirationMinues = 30;
 
-    public string CreateToken(ApplicationUser user)
+    public TokenService(UserManager<ApplicationUser> userManager)
+    {
+        _userManager = userManager;
+    }
+
+    public async Task<string> CreateToken(ApplicationUser user)
     {
         var expiration = DateTime.UtcNow.AddMinutes(ExpirationMinues);
+        var roles =  await _userManager.GetRolesAsync(user);
+        
         var token = CreateJwtToken(
-            CreateClaims(user),
+            CreateClaims(user, roles),
             CreateSigningCredentials(),
             expiration
         );
@@ -34,7 +43,7 @@ public class TokenService
             signingCredentials: credentials
         );
 
-    private List<Claim> CreateClaims(ApplicationUser user)
+    private List<Claim> CreateClaims(ApplicationUser user, IList<string> roles)
     {
         try
         {
@@ -43,6 +52,12 @@ public class TokenService
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.Name, user.UserName),
             };
+
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+            
             return claims;
         }
         catch (Exception e)

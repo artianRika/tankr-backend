@@ -4,6 +4,7 @@ using TankR.Data.Dtos.StationFuelPrices;
 using TankR.Data.Dtos.StationPhotos;
 using TankR.Data.Models;
 using TankR.Repos.Interfaces;
+using TankR.Services.Interfaces;
 
 namespace TankR.Controllers;
 
@@ -14,12 +15,14 @@ public class StationPhotoController: ControllerBase
     private readonly IStationPhotoRepo _stationPhotoRepo;
     private readonly IStationRepo _stationRepo;
     private readonly IMapper _mapper;
+    private readonly IFreeImageService _freeImageService;
 
-    public StationPhotoController(IStationPhotoRepo stationPhotoRepo, IStationRepo stationRepo, IMapper mapper)
+    public StationPhotoController(IStationPhotoRepo stationPhotoRepo, IStationRepo stationRepo, IMapper mapper, IFreeImageService freeImageService)
     {
         _stationPhotoRepo = stationPhotoRepo;
         _stationRepo = stationRepo;
         _mapper = mapper;
+        _freeImageService = freeImageService;
     }
     
     [HttpGet]
@@ -71,7 +74,7 @@ public class StationPhotoController: ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> SavePhoto(CreateStationPhotoDto photoDto)
+    public async Task<IActionResult> SavePhoto([FromForm] CreateStationPhotoDto photoDto)
     {
         try
         {
@@ -80,12 +83,22 @@ public class StationPhotoController: ControllerBase
                 return NotFound($"Station with ID {photoDto.StationId} not found");
 
             var photo = _mapper.Map<StationPhoto>(photoDto);
+            
+            if (photoDto.Image != null)
+            {
+                var imageUrl =
+                    await _freeImageService.UploadAsync(photoDto.Image);
+
+                photo.ImagePath = imageUrl;
+            }
+
+            
             await _stationPhotoRepo.SavePhoto(photo);
             
             return CreatedAtAction(
                 nameof(GetById),
                 new { id = photo.Id },
-                photoDto
+                photo
             );
         }
         catch (Exception e)

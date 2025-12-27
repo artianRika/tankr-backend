@@ -15,6 +15,7 @@ namespace TankR.Controllers
     public class AuthController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IUserRepo _userRepo;
         private readonly AppDbContext _context;
         private readonly TokenService _tokenService;
@@ -22,12 +23,14 @@ namespace TankR.Controllers
 
         public AuthController(
             UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager,
             IUserRepo userRepo,
             AppDbContext context,
             TokenService tokenService
         )
         {
             _userManager = userManager;
+            _roleManager = roleManager;
             _userRepo = userRepo;
             _context = context;
             _tokenService = tokenService;
@@ -51,6 +54,11 @@ namespace TankR.Controllers
             var result = await _userManager.CreateAsync(identityUser, dto.Password);
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
+            
+            await _userManager.AddToRoleAsync(
+                identityUser,
+                dto.Role.ToString()
+            );
 
             var user = new User
             {
@@ -87,7 +95,7 @@ namespace TankR.Controllers
             if(userInDb == null)
                 return Unauthorized();
             
-            var accessToken =  _tokenService.CreateToken(userInDb);
+            var accessToken =  await _tokenService.CreateToken(userInDb);
             await _context.SaveChangesAsync();
 
             return Ok(

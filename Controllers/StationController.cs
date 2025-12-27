@@ -5,6 +5,7 @@ using TankR.Data.Dtos.Stations;
 using TankR.Data.Models;
 using TankR.Repos.Implementations;
 using TankR.Repos.Interfaces;
+using TankR.Services.Interfaces;
 
 namespace TankR.Controllers;
 
@@ -15,17 +16,20 @@ public class StationController: ControllerBase
 {
     private readonly IStationRepo _stationRepo;
     private readonly IMapper _mapper;
+    private readonly IFreeImageService _freeImageService;
+
 
     
-    public StationController(IStationRepo stationRepo, IMapper mapper)
+    public StationController(IStationRepo stationRepo, IMapper mapper,  IFreeImageService freeImageService)
     {
         _stationRepo = stationRepo;
         _mapper = mapper;
+        _freeImageService = freeImageService;
     }
 
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<IEnumerable<StationDto>>> GetAll()
     {
         try
@@ -66,13 +70,26 @@ public class StationController: ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult> Add(CreateStationDto createStationDto)
+    public async Task<ActionResult> Add([FromForm] CreateStationDto createStationDto)
     {
         try
         {
             var station = _mapper.Map<Station>(createStationDto);
-            await _stationRepo.Add(station);
+            
+            
+            if (createStationDto.Logo != null)
+            {
+                var logoUrl =
+                    await _freeImageService.UploadAsync(createStationDto.Logo);
 
+                station.LogoUrl = logoUrl;
+            }
+            
+            station.CreatedAt = DateTime.UtcNow;
+
+            
+            await _stationRepo.Add(station);
+            
 
             return CreatedAtAction(
                 nameof(GetById),
@@ -90,7 +107,7 @@ public class StationController: ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(int id, UpdateStationDto updateStationDto)
+    public async Task<ActionResult> Update(int id, [FromForm] UpdateStationDto updateStationDto)
     {
         try
         {
@@ -98,7 +115,20 @@ public class StationController: ControllerBase
 
             if (station == null)
                 return NotFound();
+            
             _mapper.Map(updateStationDto, station);
+            
+            
+            
+            if (updateStationDto.Logo != null)
+            {
+                var logoUrl =
+                    await _freeImageService.UploadAsync(updateStationDto.Logo);
+
+                station.LogoUrl = logoUrl;
+            }
+            station.UpdatedAt = DateTime.UtcNow;
+
             await _stationRepo.Update(station);
 
             return Ok(_mapper.Map<StationDto>(station));

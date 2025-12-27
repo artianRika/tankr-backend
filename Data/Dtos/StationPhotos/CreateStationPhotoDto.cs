@@ -6,6 +6,6 @@ namespace TankR.Data.Dtos.StationPhotos;
 public class CreateStationPhotoDto
 {
     public int StationId { get; set; }
-    public string ImagePath { get; set; }
+    public IFormFile? Image { get; set; }
 
 }

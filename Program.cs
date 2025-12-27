@@ -1,5 +1,7 @@
+using System.Text;
 using System.Text.Json.Serialization;
 using AutoMapper;
+using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -8,12 +10,15 @@ using Microsoft.OpenApi.Models;
 using TankR.Auth;
 using TankR.Data;
 using TankR.Data.Models.Identity;
+using TankR.Data.Seed;
 using TankR.Mappings;
 using TankR.Repos;
 using TankR.Repos.Implementations;
 using TankR.Repos.Interfaces;
+using TankR.Services;
+using TankR.Services.Interfaces;
 
-DotNetEnv.Env.Load();
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -92,7 +97,7 @@ builder.Services.AddAuthentication(options =>
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                System.Text.Encoding.UTF8.GetBytes(jwtKey)
+                Encoding.UTF8.GetBytes(jwtKey)
             )
         
         });
@@ -130,6 +135,9 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+//used by freephoto
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IFreeImageService, FreeImageService>();
 
 var app = builder.Build();
 
@@ -137,6 +145,13 @@ var app = builder.Build();
 app.UseAuthentication();
 app.UseAuthorization();
 
+
+//seeding roles
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    await RoleSeeder.SeedRolesAsync(roleManager);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
