@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TankR.Data.Dtos.Stations;
 using TankR.Data.Models;
@@ -24,6 +25,7 @@ public class StationController: ControllerBase
 
 
     [HttpGet]
+    [Authorize]
     public async Task<ActionResult<IEnumerable<StationDto>>> GetAll()
     {
         try

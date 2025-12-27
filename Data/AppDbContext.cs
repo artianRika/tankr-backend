@@ -1,11 +1,14 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TankR.Data.Models;
+using TankR.Data.Models.Identity;
 
 namespace TankR.Data;
 
-public class AppDbContext: DbContext
+public class AppDbContext: IdentityDbContext<ApplicationUser>
 {
-    public AppDbContext(DbContextOptions options) : base(options)
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     { }
     
     public DbSet<User> Users { get; set; }
@@ -17,5 +20,15 @@ public class AppDbContext: DbContext
     public DbSet<StationEmployee> StationEmployees { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<StationPhoto> StationPhotos { get; set; }
+
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+        builder.Entity<IdentityUserLogin<string>>(b =>
+        {
+            b.HasKey((l => new { l.LoginProvider, l.ProviderKey }));
+        });
+    }
     
 }

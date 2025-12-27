@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using TankR.Data.Enums;
+using TankR.Data.Models.Identity;
 
 namespace TankR.Data.Models;
 
@@ -11,6 +12,10 @@ public class User
 {
     [Key]
     public int Id { get; set; }
+    
+    public string? IdentityUserId { get; set; }   // link to Identity
+    public ApplicationUser IdentityUser { get; set; }
+    
     [Required]
     public string FirstName { get; set; }
     [Required]
