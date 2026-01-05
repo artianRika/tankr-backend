@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TankR.Data.Dtos.StationFuelPrices;
 using TankR.Data.Models;
@@ -7,6 +8,7 @@ using TankR.Repos.Interfaces;
 
 namespace TankR.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/station-fuel-price/")]
 public class StationFuelPriceController: ControllerBase
@@ -79,6 +81,7 @@ public class StationFuelPriceController: ControllerBase
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("station/{stationId:int}/fueltype/{fuelTypeId:int}")]
     public async Task<ActionResult<StationFuelPriceDto>> SetPrice(int stationId, int fuelTypeId, decimal price)
     {
@@ -114,6 +117,8 @@ public class StationFuelPriceController: ControllerBase
             );
         }
     }
+    
+    [Authorize(Roles = "Admin")]
     [HttpPut("station/{stationId:int}/fueltype/{fuelTypeId:int}")]
     public async Task<ActionResult<StationFuelPriceDto>> UpdatePrice(int stationId, int fuelTypeId, decimal newPrice)
     {
@@ -146,6 +151,4 @@ public class StationFuelPriceController: ControllerBase
             );
         }
     }
-
-    
 }

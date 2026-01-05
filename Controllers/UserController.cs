@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TankR.Data.Models;
 using TankR.Repos.Interfaces;
@@ -18,7 +19,7 @@ public class UserController : ControllerBase
         _mapper = mapper;
     }
 
-
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<UserDto>>> GetAll()
     {
@@ -38,6 +39,7 @@ public class UserController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpGet("{email}")]
     public async Task<ActionResult<UserDto>> GetByEmail(string email)
     {
@@ -59,6 +61,7 @@ public class UserController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<UserDto>> GetById(int id)
     {
@@ -104,6 +107,7 @@ public class UserController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpPut("{id}")]
     public async Task<ActionResult> Update(int id, UpdateUserDto updateUserDto)
     {

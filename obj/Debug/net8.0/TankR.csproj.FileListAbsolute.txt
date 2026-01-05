@@ -115,3 +115,8 @@
 /Users/artian/Projects/dotnet/TankR/TankR/bin/Debug/net8.0/System.IdentityModel.Tokens.Jwt.dll
 /Users/artian/Projects/dotnet/TankR/TankR/bin/Debug/net8.0/DotNetEnv.dll
 /Users/artian/Projects/dotnet/TankR/TankR/bin/Debug/net8.0/Sprache.dll
+/Users/artian/Projects/dotnet/TankR/TankR/bin/Debug/net8.0/BouncyCastle.Cryptography.dll
+/Users/artian/Projects/dotnet/TankR/TankR/bin/Debug/net8.0/MailKit.dll
+/Users/artian/Projects/dotnet/TankR/TankR/bin/Debug/net8.0/MimeKit.dll
+/Users/artian/Projects/dotnet/TankR/TankR/bin/Debug/net8.0/System.Security.Cryptography.Pkcs.dll
+/Users/artian/Projects/dotnet/TankR/TankR/bin/Debug/net8.0/runtimes/win/lib/net8.0/System.Security.Cryptography.Pkcs.dll

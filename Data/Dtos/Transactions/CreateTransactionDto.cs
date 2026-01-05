@@ -3,7 +3,6 @@ namespace TankR.Data.Dtos.Transactions;
 public class CreateTransactionDto
 {
     public int StationId { get; set; }
-    public int CashierId { get; set; }
 
     public int CustomerId { get; set; }
     public int FuelTypeId { get; set; }

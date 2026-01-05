@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
 using AutoMapper;
@@ -98,8 +99,11 @@ builder.Services.AddAuthentication(options =>
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(jwtKey)
-            )
-        
+            ),
+
+            RoleClaimType = ClaimTypes.Role,
+            NameClaimType = ClaimTypes.NameIdentifier
+            
         });
 
 builder.Services.AddScoped<UserManager<ApplicationUser>>();
@@ -138,6 +142,10 @@ builder.Services.AddSwaggerGen(options =>
 //used by freephoto
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IFreeImageService, FreeImageService>();
+
+//email
+builder.Services.AddScoped<EmailSender>();
+
 
 var app = builder.Build();
 

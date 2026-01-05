@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TankR.Data.Dtos.FuelTypes;
 using TankR.Data.Models;
@@ -6,7 +7,7 @@ using TankR.Repos.Interfaces;
 
 namespace TankR.Controllers;
 
-
+[Authorize]
 [ApiController]
 [Route("[controller]")]
 public class FuelTypeController : ControllerBase
@@ -82,6 +83,7 @@ public class FuelTypeController : ControllerBase
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult> Add(CreateFuelTypeDto createFuelTypeDto)
     {
@@ -106,6 +108,7 @@ public class FuelTypeController : ControllerBase
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<ActionResult> Update(int id, UpdateFuelTypeDto updateFuelTypeDto)
     {

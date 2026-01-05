@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TankR.Data.Dtos.StationEmployees;
 using TankR.Data.Enums;
@@ -7,6 +8,7 @@ using TankR.Repos.Interfaces;
 
 namespace TankR.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("[controller]")]
 public class StationEmployeeController : ControllerBase
@@ -24,6 +26,7 @@ public class StationEmployeeController : ControllerBase
         _mapper = mapper;
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("station/{stationId:int}")]
     public async Task<ActionResult<IEnumerable<StationEmployeeDto>>> GetEmployeesByStation(int stationId)
     {
@@ -43,6 +46,7 @@ public class StationEmployeeController : ControllerBase
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("assign")]
     public async Task<ActionResult> Assign(AssignEmployeeDto dto)
     {
@@ -76,6 +80,7 @@ public class StationEmployeeController : ControllerBase
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("remove")]
     public async Task<ActionResult> Remove([FromBody] AssignEmployeeDto dto)
     {
@@ -103,6 +108,7 @@ public class StationEmployeeController : ControllerBase
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("exists")]
     public async Task<ActionResult> Exists([FromQuery] int stationId, [FromQuery] int userId)
     {

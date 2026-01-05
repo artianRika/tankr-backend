@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TankR.Data.Dtos.StationFuelPrices;
 using TankR.Data.Dtos.StationPhotos;
@@ -8,6 +9,7 @@ using TankR.Services.Interfaces;
 
 namespace TankR.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("[controller]")]
 public class StationPhotoController: ControllerBase
@@ -110,6 +112,7 @@ public class StationPhotoController: ControllerBase
         }
     }
     
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> Remove(int id)
     {

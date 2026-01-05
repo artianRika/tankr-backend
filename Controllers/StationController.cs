@@ -10,6 +10,7 @@ using TankR.Services.Interfaces;
 namespace TankR.Controllers;
 
 
+[Authorize]
 [ApiController]
 [Route("[controller]")]
 public class StationController: ControllerBase
@@ -29,7 +30,6 @@ public class StationController: ControllerBase
 
 
     [HttpGet]
-    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<IEnumerable<StationDto>>> GetAll()
     {
         try
@@ -69,6 +69,7 @@ public class StationController: ControllerBase
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult> Add([FromForm] CreateStationDto createStationDto)
     {
@@ -106,6 +107,7 @@ public class StationController: ControllerBase
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<ActionResult> Update(int id, [FromForm] UpdateStationDto updateStationDto)
     {

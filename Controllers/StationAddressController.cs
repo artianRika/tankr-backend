@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TankR.Data.Dtos.StationAddresses;
 using TankR.Data.Dtos.Stations;
@@ -8,6 +9,7 @@ using TankR.Repos.Interfaces;
 
 namespace TankR.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("[controller]")]
 public class StationAddressController: ControllerBase
@@ -61,6 +63,7 @@ public class StationAddressController: ControllerBase
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult> Add(CreateStationAddressDto createStationAddressDto)
     {
@@ -88,6 +91,7 @@ public class StationAddressController: ControllerBase
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     public async Task<ActionResult> Update(int id, UpdateStationAddressDto updateStationAddressDto)
     {

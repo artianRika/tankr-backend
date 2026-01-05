@@ -25,6 +25,12 @@ public class UserRepo: IUserRepo
             .Include(u => u.Address)
             .FirstOrDefaultAsync(u => u.Id == id); 
     }
+    public async Task<User?> GetByIdentityId(string identityId)
+    {
+        return await _dbContext.Users
+            .Include(u => u.Address)
+            .FirstOrDefaultAsync(u => u.IdentityUserId == identityId); 
+    }
 
     public async Task<User?> GetByEmail(string email)
     {

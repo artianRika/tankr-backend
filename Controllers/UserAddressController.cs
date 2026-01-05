@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TankR.Data.Dtos.UserAddresses;
 using TankR.Data.Models;
@@ -6,6 +7,7 @@ using TankR.Repos.Interfaces;
 
 namespace TankR.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("[controller]")]
 public class UserAddressController: ControllerBase
