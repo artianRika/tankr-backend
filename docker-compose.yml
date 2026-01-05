@@ -15,27 +15,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
-      
-  migrate:
-    image: mcr.microsoft.com/dotnet/sdk:8.0
-    container_name: tankr-migrate
-    working_dir: /src
-    volumes:
-      - ./:/src
-    environment:
-      ASPNETCORE_ENVIRONMENT: "Development"
-      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=tankr;Username=postgres;Password=postgres"
-    depends_on:
-      db:
-        condition: service_healthy
-    command: >
-      bash -lc "
-        dotnet tool restore &&
-        dotnet restore &&
-        dotnet ef database update
-      "
-    restart: "no"
-  
+     
   
   api:
     build:
@@ -48,6 +28,10 @@ services:
       ASPNETCORE_URLS: "http://+:8080"
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=tankr;Username=postgres;Password=postgres"
       ASPNETCORE_ENVIRONMENT: "Development"
+      
+      JWT_KEY: "3@7R-4Lp+VJ33zsPe9;}4CxeX=(!cRNQ"
+      JWT_ISSUER: "TankRServer"
+      JWT_AUDIENCE: "TankRClient"
       
       #Users Seeder
       Seed__Users__Admin__Email: "admin@test.com"
@@ -75,8 +59,8 @@ services:
         
       
     depends_on:
-      migrate:
-        condition: service_completed_successfully
+      db:
+        condition: service_healthy
 
 volumes:
   tankr_pg:

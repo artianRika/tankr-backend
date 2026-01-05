@@ -82,6 +82,8 @@ builder.Services.AddSwaggerGen(c =>
 //JWT
 
 var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
+var jwtIss = Environment.GetEnvironmentVariable("JWT_ISSUER");
+var jwtAud = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
 
 builder.Services.AddAuthentication(options =>
     {
@@ -95,8 +97,8 @@ builder.Services.AddAuthentication(options =>
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidIssuer = jwtIss, //builder.Configuration["Jwt:Issuer"],
+            ValidAudience = jwtAud, //builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(jwtKey)
             ),
@@ -106,8 +108,8 @@ builder.Services.AddAuthentication(options =>
             
         });
 
-builder.Services.AddScoped<UserManager<ApplicationUser>>();
-builder.Services.AddScoped<TokenService, TokenService>();
+// builder.Services.AddScoped<UserManager<ApplicationUser>>();
+builder.Services.AddScoped<TokenService>();
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -148,6 +150,16 @@ builder.Services.AddScoped<EmailSender>();
 
 
 var app = builder.Build();
+
+//migrations
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    // Applies pending migrations automatically
+    await db.Database.MigrateAsync();
+}
 
 //Enable Auth
 app.UseAuthentication();
