@@ -1,0 +1,82 @@
+services:
+  db:
+    image: postgres:16
+    container_name: tankr-db
+    environment:
+      POSTGRES_DB: tankr
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - tankr_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d tankr"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      
+  migrate:
+    image: mcr.microsoft.com/dotnet/sdk:8.0
+    container_name: tankr-migrate
+    working_dir: /src
+    volumes:
+      - ./:/src
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=tankr;Username=postgres;Password=postgres"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      bash -lc "
+        dotnet tool restore &&
+        dotnet restore &&
+        dotnet ef database update
+      "
+    restart: "no"
+  
+  
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tankr-api
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=tankr;Username=postgres;Password=postgres"
+      ASPNETCORE_ENVIRONMENT: "Development"
+      
+      #Users Seeder
+      Seed__Users__Admin__Email: "admin@test.com"
+      Seed__Users__Admin__Password: "Admintest123."
+      Seed__Users__Cashier__Email: "cashier@test.com"
+      Seed__Users__Cashier__Password: "Cashiertest123."
+      Seed__Users__Customer__Email: "customer@test.com"
+      Seed__Users__Customer__Password: "Customertest123."
+      
+
+      #Station Seeder
+      Seed__StationName: "Test Station"
+      Seed__AdminEmail: "admin@test.com"
+      Seed__AdminPassword: "Admintest123."
+      Seed__CashierEmail: "cashier@test.com"
+      
+      #StationAddress Seeder
+      Seed__StationAddress__Street: "Sv. Kiril i Metodij"
+      Seed__StationAddress__Number: "4"
+      Seed__StationAddress__City: "Skopje"
+      Seed__StationAddress__PostalCode: "1000"
+      Seed__StationAddress__Country: "NMK"
+      Seed__StationAddress__Lat: "41.990230"
+      Seed__StationAddress__Lng: "21.431633"
+        
+      
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  tankr_pg:

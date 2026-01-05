@@ -154,11 +154,34 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 
-//seeding roles
 using (var scope = app.Services.CreateScope())
 {
+    //seeding roles
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     await RoleSeeder.SeedRolesAsync(roleManager);
+    
+   
+    //Station + StationAddress + FuelType + Price Seeder
+    var services = scope.ServiceProvider;
+    var db = services.GetRequiredService<AppDbContext>();
+    var config = services.GetRequiredService<IConfiguration>();
+    var station = await StationSeeder.SeedStationAsync(db, config);
+    await StationAddressSeeder.SeedStationAddressAsync(db, config, station.Id);
+    
+    //Users Seeder
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+    var userRepo = services.GetRequiredService<IUserRepo>();
+    await UserSeeder.SeedDefaultUsersAsync(db, userManager, roleManager, userRepo, config);
+    
+    //StationEmployee Seeder
+    var cashierEmail = config["Seed:CashierEmail"] ?? "cashier@test.com";
+
+    await StationEmployeeSeeder.SeedCashierForStationAsync(
+        db,
+        station.Id,
+        cashierEmail
+    );
+
 }
 
 // Configure the HTTP request pipeline.
