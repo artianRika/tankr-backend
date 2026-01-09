@@ -33,3 +33,12 @@ TankR follows a layered architecture:
 3. Run the project using Docker:
    ```bash
    docker-compose up --build
+
+
+---
+
+## Author
+
+**Artian Rika**  
+© 2026 — TankR Backend  
+GitHub: [@artianRika](https://github.com/artianRika)
