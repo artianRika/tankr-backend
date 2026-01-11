@@ -172,7 +172,7 @@ namespace TankR.Controllers
 
                     <h3>⛽ Transaction Details</h3>
                     <ul>
-                        <li>🛢<b>Liters:</b>️ {transaction.Liters:N2} of {transaction.FuelType}</li>
+                        <li>🛢<b>Liters:</b>️ {transaction.Liters:N2} of {transaction.FuelType.Name}</li>
                         <li>⭐<b>Points earned:</b> {transaction.PointsEarned} </li>
                         <li>🎉<b>Total points:</b>{user.LoyaltyPoints}</li>
                         <li>💰<b>Total paid:</b>{transaction.TotalPrice:N2} MKD</li>

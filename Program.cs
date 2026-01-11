@@ -85,6 +85,10 @@ var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
 var jwtIss = Environment.GetEnvironmentVariable("JWT_ISSUER");
 var jwtAud = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
 
+if (string.IsNullOrWhiteSpace(jwtKey) || string.IsNullOrWhiteSpace(jwtIss) || string.IsNullOrWhiteSpace(jwtAud))
+    throw new Exception("Missing JWT env vars: JWT_KEY / JWT_ISSUER / JWT_AUDIENCE");
+
+
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -152,19 +156,24 @@ builder.Services.AddScoped<EmailSender>();
 var app = builder.Build();
 
 //migrations
-if (app.Environment.IsDevelopment())
-{
-    using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-    // Applies pending migrations automatically
-    await db.Database.MigrateAsync();
-}
+// if (app.Environment.IsDevelopment())
+// {
+//     using var scope = app.Services.CreateScope();
+//     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+//
+//     // Applies pending migrations automatically
+//     await db.Database.MigrateAsync();
+// }
 
 //Enable Auth
 app.UseAuthentication();
 app.UseAuthorization();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
+}
 
 using (var scope = app.Services.CreateScope())
 {
@@ -197,11 +206,11 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+// if (app.Environment.IsDevelopment())
+// {
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+// }
 
 app.UseHttpsRedirection();
 
