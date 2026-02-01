@@ -188,7 +188,7 @@ namespace TankR.Controllers
                     ";
                 
                 await _email.SendAsync(
-                    user.Email,
+                    "artianrika@gmail.com",
                     "Transaction Details",
                    html
                 );
