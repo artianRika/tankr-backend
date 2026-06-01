@@ -62,5 +62,13 @@ services:
       db:
         condition: service_healthy
 
+  tests:
+    image: mcr.microsoft.com/dotnet/sdk:8.0
+    profiles: ["test"]
+    working_dir: /src
+    volumes:
+      - ./:/src
+    command: ["dotnet", "test", "TankR.Tests/TankR.Tests.csproj"]
+
 volumes:
   tankr_pg:

@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/Users/artian/Projects/dotnet/TankR/TankR/TankR.csproj": {}
+    "/src/TankR.csproj": {}
   },
   "projects": {
-    "/Users/artian/Projects/dotnet/TankR/TankR/TankR.csproj": {
+    "/src/TankR.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/artian/Projects/dotnet/TankR/TankR/TankR.csproj",
+        "projectUniqueName": "/src/TankR.csproj",
         "projectName": "TankR",
-        "projectPath": "/Users/artian/Projects/dotnet/TankR/TankR/TankR.csproj",
-        "packagesPath": "/Users/artian/.nuget/packages/",
-        "outputPath": "/Users/artian/Projects/dotnet/TankR/TankR/obj/",
+        "projectPath": "/src/TankR.csproj",
+        "packagesPath": "/root/.nuget/packages/",
+        "outputPath": "/src/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/artian/.nuget/NuGet/NuGet.Config"
+          "/root/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -109,7 +109,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.416/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.421/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

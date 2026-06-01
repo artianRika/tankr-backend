@@ -33,6 +33,13 @@ TankR follows a layered architecture:
 3. Run the project using Docker:
    ```bash
    docker-compose up --build
+   ```
+
+## Running Tests (Docker)
+Run unit tests in a one-off container:
+```bash
+docker compose --profile test run --rm tests
+```
 
 
 ---
@@ -40,5 +47,7 @@ TankR follows a layered architecture:
 ## Author
 
 **Artian Rika**  
+**Liburn Lumani**
 © 2026 — TankR Backend  
 GitHub: [@artianRika](https://github.com/artianRika)
+GitHub: [@liburnlumani](https://github.com/liburnlumani)
