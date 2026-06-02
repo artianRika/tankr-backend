@@ -357,6 +357,19 @@ namespace TankR.Controllers
                         catch { /* skip image if unavailable */ }
                     }
 
+                    // Try to download station logo
+                    XImage? stationLogo = null;
+                    if (!string.IsNullOrEmpty(station.LogoUrl))
+                    {
+                        try
+                        {
+                            using var http = new System.Net.Http.HttpClient();
+                            var logoBytes = await http.GetByteArrayAsync(station.LogoUrl);
+                            stationLogo = XImage.FromStream(() => new MemoryStream(logoBytes));
+                        }
+                        catch { /* skip logo if unavailable */ }
+                    }
+
                     // PDF setup
                     var pdf = new PdfDocument();
                     var page = pdf.AddPage();
@@ -373,38 +386,48 @@ namespace TankR.Controllers
                     double usable = pageWidth - margin * 2;
                     double y = margin;
 
-                    // --- Station header ---
+                    // --- Station header with photo on left and logo on right ---
                     double imgSize = 60;
+                    
+                    // Draw logo on the right if available
+                    if (stationLogo != null)
+                    {
+                        gfx.DrawImage(stationLogo, pageWidth - margin - imgSize, y, imgSize, imgSize);
+                    }
+
                     if (stationImage != null)
                     {
                         gfx.DrawImage(stationImage, margin, y, imgSize, imgSize);
+                        var textWidth = stationLogo != null ? usable - imgSize - 10 : usable - imgSize - 10;
                         gfx.DrawString(station.Name, fontHeader, XBrushes.Black,
-                            new XRect(margin + imgSize + 10, y + 8, usable - imgSize - 10, 20), XStringFormats.TopLeft);
+                            new XRect(margin + imgSize + 10, y + 8, textWidth - imgSize, 20), XStringFormats.TopLeft);
                         if (station.Address != null)
                         {
                             var addr = $"{station.Address.Street} {station.Address.StreetNumber}, {station.Address.City} {station.Address.PostalCode}, {station.Address.Country}";
                             gfx.DrawString(addr, fontSubHeader, XBrushes.DarkGray,
-                                new XRect(margin + imgSize + 10, y + 32, usable - imgSize - 10, 16), XStringFormats.TopLeft);
+                                new XRect(margin + imgSize + 10, y + 32, textWidth - imgSize, 16), XStringFormats.TopLeft);
                         }
-                        y += imgSize + 10;
+                        y += imgSize + 20;
                     }
                     else
                     {
+                        var textWidth = stationLogo != null ? usable - imgSize - 10 : usable;
                         gfx.DrawString(station.Name, fontHeader, XBrushes.Black,
-                            new XRect(margin, y, usable, 20), XStringFormats.TopLeft);
+                            new XRect(margin, y, textWidth, 20), XStringFormats.TopLeft);
                         y += 24;
                         if (station.Address != null)
                         {
                             var addr = $"{station.Address.Street} {station.Address.StreetNumber}, {station.Address.City} {station.Address.PostalCode}, {station.Address.Country}";
                             gfx.DrawString(addr, fontSubHeader, XBrushes.DarkGray,
-                                new XRect(margin, y, usable, 16), XStringFormats.TopLeft);
+                                new XRect(margin, y, textWidth, 16), XStringFormats.TopLeft);
                             y += 20;
                         }
                     }
 
-                    // Divider
-                    gfx.DrawLine(XPens.Gray, margin, y, margin + usable, y);
+                    // Divider - add more spacing
                     y += 8;
+                    gfx.DrawLine(XPens.Gray, margin, y, margin + usable, y);
+                    y += 10;
 
                     // Report title + summary
                     gfx.DrawString("Transaction Report", fontBold, XBrushes.Black,

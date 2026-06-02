@@ -83,30 +83,6 @@ public class UserController : ControllerBase
         }
     }
 
-    [HttpPost]
-    public async Task<ActionResult> Add(CreateUserDto createUserDto)
-    {
-        try
-        {
-            var user = _mapper.Map<User>(createUserDto);
-            await _userRepo.Add(user);
-
-
-            return CreatedAtAction(
-                nameof(GetById),
-                new { id = user.Id },
-                _mapper.Map<UserDto>(user)
-            );
-        }
-        catch (Exception e)
-        {
-            return Problem(
-                detail: e.Message,
-                statusCode: StatusCodes.Status500InternalServerError
-            );
-        }
-    }
-
     [Authorize]
     [HttpPut("{id}")]
     public async Task<ActionResult> Update(int id, UpdateUserDto updateUserDto)
