@@ -236,11 +236,44 @@ namespace TankR.Controllers
                 }
                 else if (format == "csv")
                 {
+                    // Pre-fetch customer data
+                    var customerIds = transactions.Select(t => t.CustomerId).Distinct();
+                    var customerMap = new Dictionary<int, User>();
+                    foreach (var cid in customerIds)
+                    {
+                        var u = await _userRepo.GetById(cid);
+                        if (u != null) customerMap[cid] = u;
+                    }
+
+                    var fuelTypeIds = transactions.Select(t => t.FuelTypeId).Distinct();
+                    var fuelMap = new Dictionary<int, FuelType>();
+                    foreach (var fid in fuelTypeIds)
+                    {
+                        var ft = await _fuelTypeRepo.GetById(fid);
+                        if (ft != null) fuelMap[fid] = ft;
+                    }
+
                     var sb = new StringBuilder();
-                    sb.AppendLine("Id,CreatedAt,CustomerId,CashierId,FuelTypeId,Liters,PricePerLiter,TotalPrice,PointsEarned");
+                    sb.AppendLine("Id,Date,CustomerName,Phone,Address,FuelType,Liters,PricePerLiter,TotalPrice,PointsEarned");
                     foreach (var t in transactions)
                     {
-                        sb.AppendLine($"{t.Id},{t.CreatedAt:O},{t.CustomerId},{t.CashierId},{t.FuelTypeId},{t.Liters},{t.PricePerLiter},{t.TotalPrice},{t.PointsEarned}");
+                        customerMap.TryGetValue(t.CustomerId, out var customer);
+                        fuelMap.TryGetValue(t.FuelTypeId, out var fuel);
+
+                        var customerName = customer != null ? $"{customer.FirstName} {customer.LastName}" : $"Customer {t.CustomerId}";
+                        var phone = customer?.PhoneNumber ?? "-";
+                        var address = customer?.Address != null 
+                            ? $"{customer.Address.Street} {customer.Address.StreetNumber}, {customer.Address.City}, {customer.Address.Country}" 
+                            : "-";
+                        var fuelName = fuel?.Name ?? $"FuelType {t.FuelTypeId}";
+
+                        // Escape quotes in fields
+                        customerName = $"\"{customerName}\"";
+                        phone = $"\"{phone}\"";
+                        address = $"\"{address}\"";
+                        fuelName = $"\"{fuelName}\"";
+
+                        sb.AppendLine($"{t.Id},{t.CreatedAt:yyyy-MM-dd HH:mm:ss},{customerName},{phone},{address},{fuelName},{t.Liters:F2},{t.PricePerLiter:F3},{t.TotalPrice:F2},{t.PointsEarned}");
                     }
                     var bytes = Encoding.UTF8.GetBytes(sb.ToString());
                     return File(bytes, "text/csv", filename);
