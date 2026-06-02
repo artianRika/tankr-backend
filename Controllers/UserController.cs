@@ -1,6 +1,8 @@
+using System.Security.Claims;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TankR.Data.Dtos;
 using TankR.Data.Models;
 using TankR.Repos.Interfaces;
 
@@ -29,6 +31,31 @@ public class UserController : ControllerBase
 
             var result = _mapper.Map<IEnumerable<UserDto>>(users);
             return Ok(result);
+        }
+        catch (Exception e)
+        {
+            return Problem(
+                detail: e.Message,
+                statusCode: StatusCodes.Status500InternalServerError
+            );
+        }
+    }
+
+    [Authorize]
+    [HttpGet("me")]
+    public async Task<ActionResult<UserDetailsDto>> GetMe()
+    {
+        try
+        {
+            var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(identityUserId))
+                return Unauthorized();
+
+            var user = await _userRepo.GetByIdentityId(identityUserId);
+            if (user == null)
+                return NotFound();
+
+            return Ok(_mapper.Map<UserDetailsDto>(user));
         }
         catch (Exception e)
         {

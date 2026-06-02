@@ -51,6 +51,31 @@ namespace TankR.Controllers
             _mapper = mapper;
             _email = email;
         }
+
+        [Authorize(Roles = "Customer")]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMyTransactions()
+        {
+            try
+            {
+                var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(identityUserId)) return Unauthorized();
+
+                var domainUser = await _userRepo.GetByIdentityId(identityUserId);
+                if (domainUser == null) return NotFound();
+
+                var transactions = await _transactionRepo.GetByUser(domainUser.Id);
+                var dtos = _mapper.Map<IEnumerable<TransactionDto>>(transactions ?? Enumerable.Empty<Transaction>());
+                return Ok(dtos);
+            }
+            catch (Exception e)
+            {
+                return Problem(
+                    detail: e.Message,
+                    statusCode: StatusCodes.Status500InternalServerError
+                );
+            }
+        }
         
         [Authorize]
         [HttpGet("{id}")]

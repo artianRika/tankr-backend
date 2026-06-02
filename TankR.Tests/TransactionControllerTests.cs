@@ -1,9 +1,11 @@
+using System.Security.Claims;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using TankR.Controllers;
+using TankR.Data.Dtos.Transactions;
 using TankR.Data.Models;
 using TankR.Repos.Interfaces;
 using Xunit;
@@ -49,6 +51,86 @@ public class TransactionControllerTests
         {
             HttpContext = new DefaultHttpContext()
         };
+    }
+
+    private void SetCustomerIdentity(string? identityUserId)
+    {
+        var claims = new List<Claim> { new(ClaimTypes.Role, "Customer") };
+        if (!string.IsNullOrEmpty(identityUserId))
+            claims.Add(new Claim(ClaimTypes.NameIdentifier, identityUserId));
+
+        _controller.ControllerContext.HttpContext = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuth"))
+        };
+    }
+
+    [Fact]
+    public async Task GetMyTransactions_ReturnsUnauthorized_WhenIdentityClaimMissing()
+    {
+        SetCustomerIdentity(null);
+
+        var result = await _controller.GetMyTransactions();
+
+        Assert.IsType<UnauthorizedResult>(result);
+    }
+
+    [Fact]
+    public async Task GetMyTransactions_ReturnsNotFound_WhenDomainUserDoesNotExist()
+    {
+        SetCustomerIdentity("identity-abc");
+        _userRepoMock.Setup(r => r.GetByIdentityId("identity-abc")).ReturnsAsync((User?)null);
+
+        var result = await _controller.GetMyTransactions();
+
+        Assert.IsType<NotFoundResult>(result);
+    }
+
+    [Fact]
+    public async Task GetMyTransactions_ReturnsOk_WithMappedDtos_WhenUserHasTransactions()
+    {
+        SetCustomerIdentity("identity-abc");
+        var domainUser = new User { Id = 5, IdentityUserId = "identity-abc" };
+        var transactions = new List<Transaction>
+        {
+            new() { Id = 1, CustomerId = 5, StationId = 1, FuelTypeId = 1, Liters = 10 },
+            new() { Id = 2, CustomerId = 5, StationId = 1, FuelTypeId = 2, Liters = 20 }
+        };
+        var dtos = new List<TransactionDto>
+        {
+            new() { Id = 1, Liters = 10 },
+            new() { Id = 2, Liters = 20 }
+        };
+
+        _userRepoMock.Setup(r => r.GetByIdentityId("identity-abc")).ReturnsAsync(domainUser);
+        _transactionRepoMock.Setup(r => r.GetByUser(5)).ReturnsAsync(transactions);
+        _mapperMock
+            .Setup(m => m.Map<IEnumerable<TransactionDto>>(transactions))
+            .Returns(dtos);
+
+        var result = await _controller.GetMyTransactions();
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.Equal(dtos, okResult.Value);
+        _transactionRepoMock.Verify(r => r.GetByUser(5), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetMyTransactions_ReturnsOk_WithEmptyList_WhenUserHasNoTransactions()
+    {
+        SetCustomerIdentity("identity-abc");
+        var domainUser = new User { Id = 5, IdentityUserId = "identity-abc" };
+
+        _userRepoMock.Setup(r => r.GetByIdentityId("identity-abc")).ReturnsAsync(domainUser);
+        _transactionRepoMock.Setup(r => r.GetByUser(5)).ReturnsAsync((IEnumerable<Transaction>?)null);
+        _mapperMock
+            .Setup(m => m.Map<IEnumerable<TransactionDto>>(It.IsAny<IEnumerable<Transaction>>()))
+            .Returns(Enumerable.Empty<TransactionDto>());
+
+        var result = await _controller.GetMyTransactions();
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.Empty((IEnumerable<TransactionDto>)okResult.Value!);
     }
 
     [Fact]

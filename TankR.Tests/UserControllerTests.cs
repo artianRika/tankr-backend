@@ -1,7 +1,11 @@
+using System.Security.Claims;
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using TankR.Controllers;
+using TankR.Data.Dtos;
+using TankR.Data.Enums;
 using TankR.Data.Models;
 using TankR.Repos.Interfaces;
 using Xunit;
@@ -19,6 +23,72 @@ public class UserControllerTests
         _userRepoMock = new Mock<IUserRepo>();
         _mapperMock = new Mock<IMapper>();
         _controller = new UserController(_userRepoMock.Object, _mapperMock.Object);
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext()
+        };
+    }
+
+    private void SetIdentityUserId(string? identityUserId)
+    {
+        var claims = string.IsNullOrEmpty(identityUserId)
+            ? Array.Empty<Claim>()
+            : new[] { new Claim(ClaimTypes.NameIdentifier, identityUserId) };
+        _controller.ControllerContext.HttpContext = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity(claims))
+        };
+    }
+
+    [Fact]
+    public async Task GetMe_ReturnsUnauthorized_WhenIdentityClaimMissing()
+    {
+        SetIdentityUserId(null);
+
+        var result = await _controller.GetMe();
+
+        Assert.IsType<UnauthorizedResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task GetMe_ReturnsNotFound_WhenDomainUserDoesNotExist()
+    {
+        SetIdentityUserId("identity-abc");
+        _userRepoMock.Setup(r => r.GetByIdentityId("identity-abc")).ReturnsAsync((User?)null);
+
+        var result = await _controller.GetMe();
+
+        Assert.IsType<NotFoundResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task GetMe_ReturnsOk_WithMappedDto_WhenUserExists()
+    {
+        SetIdentityUserId("identity-abc");
+        var user = new User
+        {
+            Id = 1,
+            FirstName = "Jane",
+            LastName = "Doe",
+            Email = "jane@example.com",
+            Role = UserRole.Customer
+        };
+        var detailsDto = new UserDetailsDto
+        {
+            Id = 1,
+            FirstName = "Jane",
+            LastName = "Doe",
+            Email = "jane@example.com",
+            Role = UserRole.Customer
+        };
+
+        _userRepoMock.Setup(r => r.GetByIdentityId("identity-abc")).ReturnsAsync(user);
+        _mapperMock.Setup(m => m.Map<UserDetailsDto>(user)).Returns(detailsDto);
+
+        var result = await _controller.GetMe();
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.Equal(detailsDto, okResult.Value);
     }
 
     [Fact]

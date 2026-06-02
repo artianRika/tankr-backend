@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Liburn\\Documents\\UNI\\Semester 6\\Software Engineering\\TankR.csproj": {}
+    "/src/TankR.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Liburn\\Documents\\UNI\\Semester 6\\Software Engineering\\TankR.csproj": {
+    "/src/TankR.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Liburn\\Documents\\UNI\\Semester 6\\Software Engineering\\TankR.csproj",
+        "projectUniqueName": "/src/TankR.csproj",
         "projectName": "TankR",
-        "projectPath": "C:\\Users\\Liburn\\Documents\\UNI\\Semester 6\\Software Engineering\\TankR.csproj",
-        "packagesPath": "C:\\Users\\Liburn\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Liburn\\Documents\\UNI\\Semester 6\\Software Engineering\\obj\\",
+        "projectPath": "/src/TankR.csproj",
+        "packagesPath": "/root/.nuget/packages/",
+        "outputPath": "/src/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Liburn\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "/root/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -37,8 +37,7 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "10.0.300"
+        }
       },
       "frameworks": {
         "net8.0": {
@@ -106,24 +105,6 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[8.0.27, 8.0.27]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Host.win-x64",
-              "version": "[8.0.27, 8.0.27]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[8.0.27, 8.0.27]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[8.0.27, 8.0.27]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.AspNetCore.App": {
               "privateAssets": "none"
@@ -132,7 +113,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Users\\Liburn\\.dotnet\\sdk\\10.0.300/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.421/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

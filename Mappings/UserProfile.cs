@@ -1,4 +1,5 @@
 using AutoMapper;
+using TankR.Data.Dtos;
 using TankR.Data.Dtos.FuelTypes;
 using TankR.Data.Dtos.StationAddresses;
 using TankR.Data.Dtos.StationEmployees;
@@ -17,6 +18,8 @@ public class UserProfile : Profile
     {
         //User
         CreateMap<User, UserDto>()
+            .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address));
+        CreateMap<User, UserDetailsDto>()
             .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address));
         CreateMap<CreateUserDto, User>();
         CreateMap<UpdateUserDto, User>();
