@@ -5,6 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 using TankR.Data.Dtos.Transactions;
 using TankR.Data.Models;
 using TankR.Repos.Interfaces;
+using System.Text;
+using System.Text.Json;
+using System.IO;
+using PdfSharpCore.Pdf;
+using PdfSharpCore.Drawing;
 
 namespace TankR.Controllers
 {
@@ -119,7 +124,7 @@ namespace TankR.Controllers
             return Ok(_mapper.Map<IEnumerable<TransactionDto>>(transactions));
         }
 
-        [Authorize(Roles = "Cashier")]
+        [Authorize(Roles = "Cashier,Admin")]
         [HttpPost]
         public async Task<IActionResult> Create(CreateTransactionDto dto)
         {
@@ -201,6 +206,78 @@ namespace TankR.Controllers
                     detail: e.Message,
                     statusCode: StatusCodes.Status500InternalServerError
                 );
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("station/{stationId}/export")]
+        public async Task<IActionResult> ExportStation(int stationId, string format = "csv")
+        {
+            try
+            {
+                var station = await _stationRepo.GetById(stationId);
+                if (station == null) return NotFound($"Station with id: {stationId} not found");
+
+                var transactions = (await _transactionRepo.GetByStation(stationId))?.ToList() ?? new List<Transaction>();
+
+                format = (format ?? "csv").ToLowerInvariant();
+                var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+                var filename = $"{station.Name}_transactions_{timestamp}.{format}";
+
+                if (format == "json")
+                {
+                    var json = JsonSerializer.Serialize(transactions, new JsonSerializerOptions { WriteIndented = true });
+                    var bytes = Encoding.UTF8.GetBytes(json);
+                    return File(bytes, "application/json", filename);
+                }
+                else if (format == "csv")
+                {
+                    var sb = new StringBuilder();
+                    sb.AppendLine("Id,CreatedAt,CustomerId,CashierId,FuelTypeId,Liters,PricePerLiter,TotalPrice,PointsEarned");
+                    foreach (var t in transactions)
+                    {
+                        sb.AppendLine($"{t.Id},{t.CreatedAt:O},{t.CustomerId},{t.CashierId},{t.FuelTypeId},{t.Liters},{t.PricePerLiter},{t.TotalPrice},{t.PointsEarned}");
+                    }
+                    var bytes = Encoding.UTF8.GetBytes(sb.ToString());
+                    return File(bytes, "text/csv", filename);
+                }
+                else if (format == "pdf")
+                {
+                    var pdf = new PdfDocument();
+                    var page = pdf.AddPage();
+                    page.Size = PdfSharpCore.PageSize.A4;
+                    var gfx = XGraphics.FromPdfPage(page);
+                    var font = new XFont("Arial", 12);
+                    double yPoint = 40;
+                    gfx.DrawString($"Transactions for {station.Name}", new XFont("Arial", 14, XFontStyle.Bold), XBrushes.Black, new XRect(40, yPoint, page.Width - 80, 20), XStringFormats.TopLeft);
+                    yPoint += 30;
+                    gfx.DrawString("Id | CreatedAt | CustomerId | CashierId | FuelTypeId | Liters | PricePerLiter | TotalPrice | PointsEarned", font, XBrushes.Black, new XRect(40, yPoint, page.Width - 80, 20), XStringFormats.TopLeft);
+                    yPoint += 20;
+                    foreach (var t in transactions)
+                    {
+                        var line = $"{t.Id} | {t.CreatedAt:yyyy-MM-dd HH:mm} | {t.CustomerId} | {t.CashierId} | {t.FuelTypeId} | {t.Liters} | {t.PricePerLiter} | {t.TotalPrice} | {t.PointsEarned}";
+                        gfx.DrawString(line, font, XBrushes.Black, new XRect(40, yPoint, page.Width - 80, 20), XStringFormats.TopLeft);
+                        yPoint += 18;
+                        if (yPoint > page.Height - 40)
+                        {
+                            page = pdf.AddPage();
+                            gfx = XGraphics.FromPdfPage(page);
+                            yPoint = 40;
+                        }
+                    }
+                    using var ms = new MemoryStream();
+                    pdf.Save(ms);
+                    var bytes = ms.ToArray();
+                    return File(bytes, "application/pdf", filename);
+                }
+                else
+                {
+                    return BadRequest("Invalid format. Supported: csv, json, pdf");
+                }
+            }
+            catch (Exception e)
+            {
+                return Problem(detail: e.Message, statusCode: StatusCodes.Status500InternalServerError);
             }
         }
     }

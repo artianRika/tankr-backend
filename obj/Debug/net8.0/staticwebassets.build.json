@@ -1,11 +1,1 @@
-{
-  "Version": 1,
-  "Hash": "a4xrGaQSj//pOvHQn/AGE8O5lAoPy/Csc9rKIx5nc6A=",
-  "Source": "TankR",
-  "BasePath": "_content/TankR",
-  "Mode": "Default",
-  "ManifestType": "Build",
-  "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
-  "Assets": []
-}
+{"Version":1,"Hash":"cdbtTHN5kCK+W01jOyBnZfkkFHQTwifKOtSBHPBSC1k=","Source":"TankR","BasePath":"/","Mode":"Root","ManifestType":"Build","ReferencedProjectsConfiguration":[],"DiscoveryPatterns":[],"Assets":[],"Endpoints":[]}

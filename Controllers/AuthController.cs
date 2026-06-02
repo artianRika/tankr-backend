@@ -113,12 +113,7 @@ namespace TankR.Controllers
                 var accessToken = await _tokenService.CreateToken(userInDb);
                 await _context.SaveChangesAsync();
 
-                return Ok(
-                    new LoginResponseDto()
-                    {
-                        Token = accessToken,
-                        Email = userInDb.Email,
-                    });
+                return Ok(accessToken);
             }catch(Exception e)
             {
                 return Problem(
