@@ -25,17 +25,19 @@ namespace TankR.Controllers
         private readonly IFuelTypeRepo _fuelTypeRepo;
         private readonly IStationEmployeeRepo _stationEmployeeRepo;
         private readonly IStationFuelPriceRepo _stationFuelPriceRepo;
+        private readonly IStationPhotoRepo _stationPhotoRepo;
         private readonly IMapper _mapper;
-        
+
         private readonly EmailSender _email;
 
         public TransactionController(
-            ITransactionRepo transactionRepo, 
-            IUserRepo userRepo, 
-            IStationRepo stationRepo, 
+            ITransactionRepo transactionRepo,
+            IUserRepo userRepo,
+            IStationRepo stationRepo,
             IFuelTypeRepo fuelTypeRepo,
             IStationFuelPriceRepo stationFuelPriceRepo,
             IStationEmployeeRepo stationEmployeeRepo,
+            IStationPhotoRepo stationPhotoRepo,
             IMapper mapper,
             EmailSender email)
         {
@@ -45,6 +47,7 @@ namespace TankR.Controllers
             _fuelTypeRepo = fuelTypeRepo;
             _stationFuelPriceRepo = stationFuelPriceRepo;
             _stationEmployeeRepo = stationEmployeeRepo;
+            _stationPhotoRepo = stationPhotoRepo;
             _mapper = mapper;
             _email = email;
         }
@@ -244,28 +247,180 @@ namespace TankR.Controllers
                 }
                 else if (format == "pdf")
                 {
+                    // Pre-fetch all related data
+                    var customerIds = transactions.Select(t => t.CustomerId).Distinct();
+                    var customerMap = new Dictionary<int, User>();
+                    foreach (var cid in customerIds)
+                    {
+                        var u = await _userRepo.GetById(cid);
+                        if (u != null) customerMap[cid] = u;
+                    }
+
+                    var fuelTypeIds = transactions.Select(t => t.FuelTypeId).Distinct();
+                    var fuelMap = new Dictionary<int, FuelType>();
+                    foreach (var fid in fuelTypeIds)
+                    {
+                        var ft = await _fuelTypeRepo.GetById(fid);
+                        if (ft != null) fuelMap[fid] = ft;
+                    }
+
+                    // Try to download station photo
+                    XImage? stationImage = null;
+                    var photos = await _stationPhotoRepo.GetAllByStationId(stationId);
+                    var firstPhoto = photos?.FirstOrDefault();
+                    if (firstPhoto != null)
+                    {
+                        try
+                        {
+                            using var http = new System.Net.Http.HttpClient();
+                            var imgBytes = await http.GetByteArrayAsync(firstPhoto.ImagePath);
+                            stationImage = XImage.FromStream(() => new MemoryStream(imgBytes));
+                        }
+                        catch { /* skip image if unavailable */ }
+                    }
+
+                    // PDF setup
                     var pdf = new PdfDocument();
                     var page = pdf.AddPage();
                     page.Size = PdfSharpCore.PageSize.A4;
                     var gfx = XGraphics.FromPdfPage(page);
-                    var font = new XFont("Arial", 12);
-                    double yPoint = 40;
-                    gfx.DrawString($"Transactions for {station.Name}", new XFont("Arial", 14, XFontStyle.Bold), XBrushes.Black, new XRect(40, yPoint, page.Width - 80, 20), XStringFormats.TopLeft);
-                    yPoint += 30;
-                    gfx.DrawString("Id | CreatedAt | CustomerId | CashierId | FuelTypeId | Liters | PricePerLiter | TotalPrice | PointsEarned", font, XBrushes.Black, new XRect(40, yPoint, page.Width - 80, 20), XStringFormats.TopLeft);
-                    yPoint += 20;
-                    foreach (var t in transactions)
+
+                    var fontBold = new XFont("Arial", 11, XFontStyle.Bold);
+                    var fontSmall = new XFont("Arial", 8);
+                    var fontHeader = new XFont("Arial", 14, XFontStyle.Bold);
+                    var fontSubHeader = new XFont("Arial", 10);
+
+                    const double margin = 30;
+                    double pageWidth = page.Width;
+                    double usable = pageWidth - margin * 2;
+                    double y = margin;
+
+                    // --- Station header ---
+                    double imgSize = 60;
+                    if (stationImage != null)
                     {
-                        var line = $"{t.Id} | {t.CreatedAt:yyyy-MM-dd HH:mm} | {t.CustomerId} | {t.CashierId} | {t.FuelTypeId} | {t.Liters} | {t.PricePerLiter} | {t.TotalPrice} | {t.PointsEarned}";
-                        gfx.DrawString(line, font, XBrushes.Black, new XRect(40, yPoint, page.Width - 80, 20), XStringFormats.TopLeft);
-                        yPoint += 18;
-                        if (yPoint > page.Height - 40)
+                        gfx.DrawImage(stationImage, margin, y, imgSize, imgSize);
+                        gfx.DrawString(station.Name, fontHeader, XBrushes.Black,
+                            new XRect(margin + imgSize + 10, y + 8, usable - imgSize - 10, 20), XStringFormats.TopLeft);
+                        if (station.Address != null)
                         {
-                            page = pdf.AddPage();
-                            gfx = XGraphics.FromPdfPage(page);
-                            yPoint = 40;
+                            var addr = $"{station.Address.Street} {station.Address.StreetNumber}, {station.Address.City} {station.Address.PostalCode}, {station.Address.Country}";
+                            gfx.DrawString(addr, fontSubHeader, XBrushes.DarkGray,
+                                new XRect(margin + imgSize + 10, y + 32, usable - imgSize - 10, 16), XStringFormats.TopLeft);
+                        }
+                        y += imgSize + 10;
+                    }
+                    else
+                    {
+                        gfx.DrawString(station.Name, fontHeader, XBrushes.Black,
+                            new XRect(margin, y, usable, 20), XStringFormats.TopLeft);
+                        y += 24;
+                        if (station.Address != null)
+                        {
+                            var addr = $"{station.Address.Street} {station.Address.StreetNumber}, {station.Address.City} {station.Address.PostalCode}, {station.Address.Country}";
+                            gfx.DrawString(addr, fontSubHeader, XBrushes.DarkGray,
+                                new XRect(margin, y, usable, 16), XStringFormats.TopLeft);
+                            y += 20;
                         }
                     }
+
+                    // Divider
+                    gfx.DrawLine(XPens.Gray, margin, y, margin + usable, y);
+                    y += 8;
+
+                    // Report title + summary
+                    gfx.DrawString("Transaction Report", fontBold, XBrushes.Black,
+                        new XRect(margin, y, usable, 16), XStringFormats.TopLeft);
+                    gfx.DrawString($"Generated: {DateTime.UtcNow:yyyy-MM-dd HH:mm} UTC    Total transactions: {transactions.Count}    Total revenue: {transactions.Sum(t => t.TotalPrice):F2}",
+                        fontSmall, XBrushes.DarkGray, new XRect(margin, y + 16, usable, 14), XStringFormats.TopLeft);
+                    y += 36;
+
+                    // --- Table ---
+                    // Column definitions: (header, width)
+                    var cols = new (string Header, double Width)[]
+                    {
+                        ("#",       22),
+                        ("Date",    68),
+                        ("Customer",85),
+                        ("Phone",   65),
+                        ("Address", 95),
+                        ("Fuel",    50),
+                        ("Liters",  38),
+                        ("€/L",     36),
+                        ("Total €", 42),
+                        ("Points",  34),
+                    };
+
+                    double rowH = 16;
+                    double headerH = 18;
+
+                    void DrawTableHeader()
+                    {
+                        gfx.DrawRectangle(new XSolidBrush(XColor.FromArgb(50, 50, 50)), margin, y, usable, headerH);
+                        double cx = margin;
+                        foreach (var col in cols)
+                        {
+                            gfx.DrawString(col.Header, fontBold, XBrushes.White,
+                                new XRect(cx + 2, y + 2, col.Width - 4, headerH - 2), XStringFormats.TopLeft);
+                            cx += col.Width;
+                        }
+                        y += headerH;
+                    }
+
+                    DrawTableHeader();
+
+                    int rowNum = 0;
+                    foreach (var t in transactions)
+                    {
+                        if (y + rowH > page.Height - margin)
+                        {
+                            page = pdf.AddPage();
+                            page.Size = PdfSharpCore.PageSize.A4;
+                            gfx = XGraphics.FromPdfPage(page);
+                            y = margin;
+                            DrawTableHeader();
+                        }
+
+                        // Alternating row background
+                        if (rowNum % 2 == 1)
+                            gfx.DrawRectangle(new XSolidBrush(XColor.FromArgb(245, 245, 245)), margin, y, usable, rowH);
+
+                        customerMap.TryGetValue(t.CustomerId, out var customer);
+                        fuelMap.TryGetValue(t.FuelTypeId, out var fuel);
+
+                        var addrStr = "";
+                        if (customer?.Address != null)
+                            addrStr = $"{customer.Address.City}, {customer.Address.Country}";
+
+                        var cellValues = new string[]
+                        {
+                            t.Id.ToString(),
+                            t.CreatedAt.ToString("dd.MM.yy HH:mm"),
+                            customer != null ? $"{customer.FirstName} {customer.LastName}" : t.CustomerId.ToString(),
+                            customer?.PhoneNumber ?? "-",
+                            addrStr,
+                            fuel?.Name ?? t.FuelTypeId.ToString(),
+                            t.Liters.ToString("F2"),
+                            t.PricePerLiter.ToString("F3"),
+                            t.TotalPrice.ToString("F2"),
+                            t.PointsEarned.ToString(),
+                        };
+
+                        double cx = margin;
+                        for (int i = 0; i < cols.Length; i++)
+                        {
+                            gfx.DrawString(cellValues[i], fontSmall, XBrushes.Black,
+                                new XRect(cx + 2, y + 2, cols[i].Width - 4, rowH - 2), XStringFormats.TopLeft);
+                            cx += cols[i].Width;
+                        }
+
+                        // Row bottom border
+                        gfx.DrawLine(new XPen(XColor.FromArgb(220, 220, 220)), margin, y + rowH, margin + usable, y + rowH);
+
+                        y += rowH;
+                        rowNum++;
+                    }
+
                     using var ms = new MemoryStream();
                     pdf.Save(ms);
                     var bytes = ms.ToArray();
