@@ -891,7 +891,9 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/Microsoft.Win32.Primitives.dll": {}
+          "ref/netstandard1.3/Microsoft.Win32.Primitives.dll": {
+            "related": ".xml"
+          }
         }
       },
       "MimeKit/4.14.0": {
@@ -1199,19 +1201,27 @@
       "SixLabors.Fonts/1.0.0-beta17": {
         "type": "package",
         "compile": {
-          "lib/netcoreapp3.1/SixLabors.Fonts.dll": {}
+          "lib/netcoreapp3.1/SixLabors.Fonts.dll": {
+            "related": ".xml"
+          }
         },
         "runtime": {
-          "lib/netcoreapp3.1/SixLabors.Fonts.dll": {}
+          "lib/netcoreapp3.1/SixLabors.Fonts.dll": {
+            "related": ".xml"
+          }
         }
       },
       "SixLabors.ImageSharp/1.0.4": {
         "type": "package",
         "compile": {
-          "lib/netcoreapp3.1/SixLabors.ImageSharp.dll": {}
+          "lib/netcoreapp3.1/SixLabors.ImageSharp.dll": {
+            "related": ".xml"
+          }
         },
         "runtime": {
-          "lib/netcoreapp3.1/SixLabors.ImageSharp.dll": {}
+          "lib/netcoreapp3.1/SixLabors.ImageSharp.dll": {
+            "related": ".xml"
+          }
         }
       },
       "Sprache/2.3.1": {
@@ -1303,7 +1313,9 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.6/System.AppContext.dll": {}
+          "ref/netstandard1.6/System.AppContext.dll": {
+            "related": ".xml"
+          }
         },
         "runtime": {
           "lib/netstandard1.6/System.AppContext.dll": {}

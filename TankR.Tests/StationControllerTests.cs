@@ -12,26 +12,22 @@ namespace TankR.Tests;
 
 public class StationControllerTests
 {
-    private readonly Mock<IStationRepo> _stationRepoMock;
-    private readonly Mock<IMapper> _mapperMock;
-    private readonly Mock<IFreeImageService> _freeImageServiceMock;
+    private readonly Mock<IStationRepo> _stationRepo = new();
+    private readonly Mock<IMapper> _mapper = new();
     private readonly StationController _controller;
 
     public StationControllerTests()
     {
-        _stationRepoMock = new Mock<IStationRepo>();
-        _mapperMock = new Mock<IMapper>();
-        _freeImageServiceMock = new Mock<IFreeImageService>();
         _controller = new StationController(
-            _stationRepoMock.Object,
-            _mapperMock.Object,
-            _freeImageServiceMock.Object);
+            _stationRepo.Object,
+            _mapper.Object,
+            new Mock<IFreeImageService>().Object);
     }
 
     [Fact]
-    public async Task GetById_ReturnsNotFound_WhenStationDoesNotExist()
+    public async Task GetById_ReturnsNotFound_WhenStationMissing()
     {
-        _stationRepoMock.Setup(r => r.GetById(999)).ReturnsAsync((Station?)null);
+        _stationRepo.Setup(r => r.GetById(999)).ReturnsAsync((Station?)null);
 
         var result = await _controller.GetById(999);
 
@@ -39,26 +35,25 @@ public class StationControllerTests
     }
 
     [Fact]
-    public async Task GetAll_ReturnsOk_WithAllStations()
+    public async Task GetAll_ReturnsAllStations()
     {
         var stations = new List<Station>
         {
-            new Station { Id = 1, Name = "TankR North" },
-            new Station { Id = 2, Name = "TankR South" }
+            new() { Id = 1, Name = "TankR North" },
+            new() { Id = 2, Name = "TankR South" }
         };
-        var stationDtos = new List<StationDto>
+        var dtos = new List<StationDto>
         {
-            new StationDto { Id = 1, Name = "TankR North" },
-            new StationDto { Id = 2, Name = "TankR South" }
+            new() { Id = 1, Name = "TankR North" },
+            new() { Id = 2, Name = "TankR South" }
         };
 
-        _stationRepoMock.Setup(r => r.GetAll()).ReturnsAsync(stations);
-        _mapperMock.Setup(m => m.Map<IEnumerable<StationDto>>(stations)).Returns(stationDtos);
+        _stationRepo.Setup(r => r.GetAll()).ReturnsAsync(stations);
+        _mapper.Setup(m => m.Map<IEnumerable<StationDto>>(stations)).Returns(dtos);
 
         var result = await _controller.GetAll();
 
-        var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var returned = Assert.IsAssignableFrom<IEnumerable<StationDto>>(okResult.Value);
-        Assert.Equal(2, returned.Count());
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.Equal(2, Assert.IsAssignableFrom<IEnumerable<StationDto>>(ok.Value).Count());
     }
 }

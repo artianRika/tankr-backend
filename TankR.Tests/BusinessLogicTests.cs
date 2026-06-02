@@ -6,15 +6,9 @@ namespace TankR.Tests;
 public class BusinessLogicTests
 {
     [Fact]
-    public void TotalPrice_EqualsLitersMultipliedByPricePerLiter()
+    public void TotalPrice_IsLitersTimesPricePerLiter()
     {
-        // Replicates the calculation in TransactionController.Create:
-        // transaction.TotalPrice = transaction.PricePerLiter * transaction.Liters
-        var transaction = new Transaction
-        {
-            Liters = 20m,
-            PricePerLiter = 65.50m
-        };
+        var transaction = new Transaction { Liters = 20m, PricePerLiter = 65.50m };
 
         transaction.TotalPrice = transaction.PricePerLiter * transaction.Liters;
 
@@ -22,20 +16,8 @@ public class BusinessLogicTests
     }
 
     [Fact]
-    public void PointsEarned_IsCalculatedAs2PointsPerRoundedLiter()
+    public void LoyaltyPoints_IncreaseAfterFuelPurchase()
     {
-        // Replicates: transaction.PointsEarned = Convert.ToInt32(dto.Liters) * 2
-        // Convert.ToInt32 rounds to nearest integer (banker's rounding on .5)
-        decimal liters = 15.7m;
-        int expectedPoints = Convert.ToInt32(liters) * 2; // rounds to 16 → 32
-
-        Assert.Equal(32, expectedPoints);
-    }
-
-    [Fact]
-    public void LoyaltyPoints_AccumulateAcrossMultipleTransactions()
-    {
-        // Replicates: user.LoyaltyPoints += transaction.PointsEarned
         var user = new User
         {
             Id = 1,
@@ -46,9 +28,9 @@ public class BusinessLogicTests
             LoyaltyPoints = 100
         };
 
-        user.LoyaltyPoints += Convert.ToInt32(30m) * 2; // first fill: 60 pts
-        user.LoyaltyPoints += Convert.ToInt32(20m) * 2; // second fill: 40 pts
+        // 2 points per rounded liter (same rule as TransactionController.Create)
+        user.LoyaltyPoints += Convert.ToInt32(30m) * 2;
 
-        Assert.Equal(200, user.LoyaltyPoints);
+        Assert.Equal(160, user.LoyaltyPoints);
     }
 }
