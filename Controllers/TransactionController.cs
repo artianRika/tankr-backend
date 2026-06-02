@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.IO;
 using PdfSharpCore.Pdf;
 using PdfSharpCore.Drawing;
+using PdfSharpCore.Fonts;
 
 namespace TankR.Controllers
 {
@@ -279,6 +280,51 @@ namespace TankR.Controllers
             {
                 return Problem(detail: e.Message, statusCode: StatusCodes.Status500InternalServerError);
             }
+        }
+    }
+
+    public class ArialFontResolver : IFontResolver
+    {
+        public string DefaultFontName => "Arial";
+
+        private static string FontPath(string faceName)
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                var dir = Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
+                return faceName switch
+                {
+                    "Arial#b"  => Path.Combine(dir, "arialbd.ttf"),
+                    "Arial#i"  => Path.Combine(dir, "ariali.ttf"),
+                    "Arial#bi" => Path.Combine(dir, "arialbi.ttf"),
+                    _          => Path.Combine(dir, "arial.ttf"),
+                };
+            }
+            else
+            {
+                const string dir = "/usr/share/fonts/truetype/liberation";
+                return faceName switch
+                {
+                    "Arial#b"  => Path.Combine(dir, "LiberationSans-Bold.ttf"),
+                    "Arial#i"  => Path.Combine(dir, "LiberationSans-Italic.ttf"),
+                    "Arial#bi" => Path.Combine(dir, "LiberationSans-BoldItalic.ttf"),
+                    _          => Path.Combine(dir, "LiberationSans-Regular.ttf"),
+                };
+            }
+        }
+
+        public byte[] GetFont(string faceName) => System.IO.File.ReadAllBytes(FontPath(faceName));
+
+        public FontResolverInfo ResolveTypeface(string familyName, bool isBold, bool isItalic)
+        {
+            var suffix = (isBold, isItalic) switch
+            {
+                (true, true)  => "#bi",
+                (true, false) => "#b",
+                (false, true) => "#i",
+                _             => ""
+            };
+            return new FontResolverInfo($"Arial{suffix}");
         }
     }
 }

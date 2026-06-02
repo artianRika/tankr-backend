@@ -8,7 +8,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using PdfSharpCore.Fonts;
 using TankR.Auth;
+using TankR.Controllers;
 using TankR.Data;
 using TankR.Data.Models.Identity;
 using TankR.Data.Seed;
@@ -20,6 +22,7 @@ using TankR.Services;
 using TankR.Services.Interfaces;
 
 Env.Load();
+GlobalFontSettings.FontResolver = new ArialFontResolver();
 
 var builder = WebApplication.CreateBuilder(args);
 
