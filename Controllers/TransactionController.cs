@@ -52,6 +52,7 @@ namespace TankR.Controllers
             _email = email;
         }
         
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -60,15 +61,43 @@ namespace TankR.Controllers
                 var transaction = await _transactionRepo.GetById(id);
                 if (transaction == null) return NotFound();
 
-                var domainUser = await _userRepo.GetById(transaction.CustomerId);
                 var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrEmpty(identityUserId)) return Unauthorized();
-                
-                if (!string.Equals(domainUser.IdentityUserId, identityUserId, StringComparison.Ordinal))
-                    return Forbid(); 
-                
-                return Ok(_mapper.Map<TransactionDto>(transaction));
-              
+
+                // Admin can view any transaction
+                if (User.IsInRole("Admin"))
+                {
+                    return Ok(_mapper.Map<TransactionDto>(transaction));
+                }
+
+                // Cashier can view transactions from their station
+                if (User.IsInRole("Cashier"))
+                {
+                    var domainCashier = await _userRepo.GetByIdentityId(identityUserId);
+                    if (domainCashier == null) return Forbid();
+                    
+                    var isStationEmployee = await _stationEmployeeRepo.Exists(transaction.StationId, domainCashier.Id);
+                    if (isStationEmployee)
+                    {
+                        return Ok(_mapper.Map<TransactionDto>(transaction));
+                    }
+                    return Forbid();
+                }
+
+                // Customer can only view their own transactions
+                if (User.IsInRole("Customer"))
+                {
+                    var domainUser = await _userRepo.GetById(transaction.CustomerId);
+                    if (domainUser == null) return NotFound();
+                    
+                    if (string.Equals(domainUser.IdentityUserId, identityUserId, StringComparison.Ordinal))
+                    {
+                        return Ok(_mapper.Map<TransactionDto>(transaction));
+                    }
+                    return Forbid();
+                }
+
+                return Forbid();
             }
             catch (Exception e)
             {
@@ -79,31 +108,37 @@ namespace TankR.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin, Cashier")]
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetByUser(int userId)
         {
             try
             {
-
                 var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrEmpty(identityUserId)) return Unauthorized();
 
                 var domainUser = await _userRepo.GetById(userId);
                 if (domainUser == null) return NotFound("User not found");
 
+                // Admin can view transactions for any user
                 if (User.IsInRole("Admin"))
                 {
                     var txAdmin = await _transactionRepo.GetByUser(userId);
                     return Ok(_mapper.Map<IEnumerable<TransactionDto>>(txAdmin));
                 }
 
-                if (User.IsInRole("Customer"))
+                // Cashier can view their own transactions only
+                if (User.IsInRole("Cashier"))
                 {
-                    if (!string.Equals(domainUser.IdentityUserId, identityUserId, StringComparison.Ordinal))
-                        return Forbid(); // 403
-
-                    var tx = await _transactionRepo.GetByUser(userId);
-                    return Ok(_mapper.Map<IEnumerable<TransactionDto>>(tx));
+                    var domainCashier = await _userRepo.GetByIdentityId(identityUserId);
+                    if (domainCashier == null) return Forbid();
+                    
+                    if (domainCashier.Id == userId)
+                    {
+                        var txCashier = await _transactionRepo.GetByUser(userId);
+                        return Ok(_mapper.Map<IEnumerable<TransactionDto>>(txCashier));
+                    }
+                    return Forbid();
                 }
 
                 return Forbid();
@@ -145,11 +180,20 @@ namespace TankR.Controllers
                 if (string.IsNullOrEmpty(identityCashierId)) return Unauthorized();
                 
                 var domainCashier = await _userRepo.GetByIdentityId(identityCashierId);
-                if (domainCashier == null) return NotFound("Cashier not found");
+                if (domainCashier == null) return NotFound("User not found");
                 
-                var validCashier = await _stationEmployeeRepo.Exists(dto.StationId, domainCashier.Id);
-                if (!validCashier) return NotFound("This cashier was not found in that station");
-                
+                // Cashier must be employed at the station
+                if (User.IsInRole("Cashier"))
+                {
+                    var validCashier = await _stationEmployeeRepo.Exists(dto.StationId, domainCashier.Id);
+                    if (!validCashier) return Forbid("This cashier is not employed at that station");
+                }
+                // Admin can create at any station, set cashier to current user
+                else if (User.IsInRole("Admin"))
+                {
+                    // Admin creating transaction - use their ID as cashier
+                    domainCashier = await _userRepo.GetByIdentityId(identityCashierId);
+                }
                 
                 var fuelType = await _fuelTypeRepo.GetById(dto.FuelTypeId);
                 if (fuelType == null) return NotFound("Fuel type with id: " + dto.FuelTypeId + " not found");
@@ -173,7 +217,7 @@ namespace TankR.Controllers
                 transaction.CashierId = domainCashier.Id;
                 
                 await _transactionRepo.Add(transaction);
-                
+                /*
                 var html = $@"
                     <p>Hello {user.FirstName},</p>
                     <p>Thank you for choosing {transaction.Station.Name}!</p>
@@ -200,7 +244,8 @@ namespace TankR.Controllers
                     "artianrika@gmail.com",
                     "Transaction Details",
                    html
-                );
+                );*/
+                
                 return CreatedAtAction(nameof(GetById), new { id = transaction.Id },
                     _mapper.Map<TransactionDto>(transaction));
             }
