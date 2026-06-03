@@ -38,6 +38,11 @@ public class Transaction
     [Required]
     public int PointsEarned { get; set; }
 
+    public int PointsRedeemed { get; set; }
+
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal LoyaltyDiscountMkd { get; set; }
+
     [Required]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

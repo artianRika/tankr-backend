@@ -1,4 +1,5 @@
 using TankR.Data.Models;
+using TankR.Services;
 using Xunit;
 
 namespace TankR.Tests;
@@ -28,9 +29,30 @@ public class BusinessLogicTests
             LoyaltyPoints = 100
         };
 
-        // 2 points per rounded liter (same rule as TransactionController.Create)
-        user.LoyaltyPoints += Convert.ToInt32(30m) * 2;
+        user.LoyaltyPoints += LoyaltyRules.PointsForLiters(30m);
 
         Assert.Equal(160, user.LoyaltyPoints);
+    }
+
+    [Fact]
+    public void RedeemPoints_100PointsGives10MkdOff()
+    {
+        var subtotal = 500m;
+
+        var ok = LoyaltyRules.TryRedeem(100, 200, subtotal, out var used, out var discount, out var error);
+
+        Assert.True(ok);
+        Assert.Null(error);
+        Assert.Equal(100, used);
+        Assert.Equal(10m, discount);
+    }
+
+    [Fact]
+    public void RedeemPoints_RejectsInsufficientBalance()
+    {
+        var ok = LoyaltyRules.TryRedeem(100, 50, 500m, out _, out _, out var error);
+
+        Assert.False(ok);
+        Assert.Equal("Insufficient loyalty points.", error);
     }
 }

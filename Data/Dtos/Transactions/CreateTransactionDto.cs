@@ -8,6 +8,9 @@ public class CreateTransactionDto
     public int FuelTypeId { get; set; }
     
     public decimal Liters { get; set; }
+
+    /// <summary>Redeem loyalty points (multiples of 100 = 10 MKD off per block).</summary>
+    public int PointsToRedeem { get; set; }
   
     public DateTime CreatedAt { get; set; }
 }

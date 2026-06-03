@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using TankR.Data.Dtos.Transactions;
 using TankR.Data.Models;
 using TankR.Repos.Interfaces;
+using TankR.Services;
 using System.Text;
 using System.Text.Json;
 using System.IO;
@@ -188,6 +189,7 @@ namespace TankR.Controllers
             return Ok(_mapper.Map<IEnumerable<TransactionDto>>(transactions));
         }
 
+        
         [Authorize(Roles = "Cashier,Admin")]
         [HttpPost]
         public async Task<IActionResult> Create(CreateTransactionDto dto)
@@ -232,10 +234,26 @@ namespace TankR.Controllers
 
                 transaction.Liters = dto.Liters;
                 transaction.PricePerLiter = pricePerLiter.Price;
-                transaction.TotalPrice = transaction.PricePerLiter * transaction.Liters;
+                var subtotal = transaction.PricePerLiter * transaction.Liters;
 
-                transaction.PointsEarned = Convert.ToInt32(dto.Liters) * 2;
+                if (!LoyaltyRules.TryRedeem(
+                        dto.PointsToRedeem,
+                        user.LoyaltyPoints,
+                        subtotal,
+                        out var pointsRedeemed,
+                        out var discountMkd,
+                        out var redeemError))
+                {
+                    return BadRequest(redeemError);
+                }
 
+                transaction.PointsRedeemed = pointsRedeemed;
+                transaction.LoyaltyDiscountMkd = discountMkd;
+                transaction.TotalPrice = subtotal - discountMkd;
+
+                transaction.PointsEarned = LoyaltyRules.PointsForLiters(dto.Liters);
+
+                user.LoyaltyPoints -= pointsRedeemed;
                 user.LoyaltyPoints += transaction.PointsEarned;
                 await _userRepo.Update(user);
 
