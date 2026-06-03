@@ -24,7 +24,7 @@ public class UserController : ControllerBase
         _mapper = mapper;
     }
 
-    [Authorize]
+    [Authorize(Roles = "Admin,Cashier")]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<UserDto>>> GetAll()
     {
@@ -129,7 +129,7 @@ public class UserController : ControllerBase
         }
     }
 
-    [Authorize]
+    [Authorize(Roles = "Admin,Cashier")]
     [HttpGet("{email}")]
     public async Task<ActionResult<UserDto>> GetByEmail(string email)
     {
@@ -151,7 +151,7 @@ public class UserController : ControllerBase
         }
     }
 
-    [Authorize]
+    [Authorize(Roles = "Admin,Cashier")]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<UserDto>> GetById(int id)
     {
@@ -173,7 +173,7 @@ public class UserController : ControllerBase
         }
     }
 
-    [Authorize]
+    [Authorize(Roles = "Admin,Cashier")]
     [HttpPut("{id}")]
     public async Task<ActionResult> Update(int id, UpdateUserDto updateUserDto)
     {
