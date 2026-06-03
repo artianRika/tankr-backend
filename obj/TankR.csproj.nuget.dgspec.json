@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/src/TankR.csproj": {}
+    "/home/liburnlumani/UNI/SoftwareEngineering/tankr-backend/TankR.csproj": {}
   },
   "projects": {
-    "/src/TankR.csproj": {
+    "/home/liburnlumani/UNI/SoftwareEngineering/tankr-backend/TankR.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/src/TankR.csproj",
+        "projectUniqueName": "/home/liburnlumani/UNI/SoftwareEngineering/tankr-backend/TankR.csproj",
         "projectName": "TankR",
-        "projectPath": "/src/TankR.csproj",
-        "packagesPath": "/root/.nuget/packages/",
-        "outputPath": "/src/obj/",
+        "projectPath": "/home/liburnlumani/UNI/SoftwareEngineering/tankr-backend/TankR.csproj",
+        "packagesPath": "/home/liburnlumani/.nuget/packages/",
+        "outputPath": "/home/liburnlumani/UNI/SoftwareEngineering/tankr-backend/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/root/.nuget/NuGet/NuGet.Config"
+          "/home/liburnlumani/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -32,11 +32,6 @@
           "warnAsError": [
             "NU1605"
           ]
-        },
-        "restoreAuditProperties": {
-          "enableAudit": "true",
-          "auditLevel": "low",
-          "auditMode": "direct"
         }
       },
       "frameworks": {
@@ -113,7 +108,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.421/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.127/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
