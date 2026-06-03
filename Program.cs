@@ -8,7 +8,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using PdfSharpCore.Fonts;
 using TankR.Auth;
+using TankR.Controllers;
 using TankR.Data;
 using TankR.Data.Models.Identity;
 using TankR.Data.Seed;
@@ -20,6 +22,7 @@ using TankR.Services;
 using TankR.Services.Interfaces;
 
 Env.Load();
+GlobalFontSettings.FontResolver = new ArialFontResolver();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -186,8 +189,10 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     var db = services.GetRequiredService<AppDbContext>();
     var config = services.GetRequiredService<IConfiguration>();
-    var station = await StationSeeder.SeedStationAsync(db, config);
-    await StationAddressSeeder.SeedStationAddressAsync(db, config, station.Id);
+    var stations = await StationSeeder.SeedStationsAsync(db, config);
+    
+    // Seed addresses for all stations
+    await StationAddressSeeder.SeedStationAddressesAsync(db, config, stations);
     
     //Users Seeder
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
@@ -195,13 +200,14 @@ using (var scope = app.Services.CreateScope())
     await UserSeeder.SeedDefaultUsersAsync(db, userManager, roleManager, userRepo, config);
     
     //StationEmployee Seeder
-    var cashierEmail = config["Seed:CashierEmail"] ?? "cashier@test.com";
+    var cashierEmailsCsv = config["Seed:CashierEmails"] ?? "cashier@test.com,cashier2@test.com,cashier3@test.com";
+    var cashierEmails = cashierEmailsCsv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    await StationEmployeeSeeder.SeedCashiersForAllStationsAsync(db, stations, cashierEmails);
 
-    await StationEmployeeSeeder.SeedCashierForStationAsync(
-        db,
-        station.Id,
-        cashierEmail
-    );
+    //Transaction Seeder
+    var fuelTypeRepo = services.GetRequiredService<IFuelTypeRepo>();
+    var stationFuelPriceRepo = services.GetRequiredService<IStationFuelPriceRepo>();
+    await TransactionSeeder.SeedTransactionsAsync(db, userRepo, fuelTypeRepo, stationFuelPriceRepo);
 
 }
 
