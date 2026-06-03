@@ -42,13 +42,61 @@ public static class UserSeeder
                 Phone: config["Seed:Users:Cashier:Phone"] ?? "000000001"
             ),
             new SeedUser(
+                Role: UserRole.Cashier,
+                Email: config["Seed:Users:Cashier2:Email"] ?? "cashier2@test.com",
+                Password: config["Seed:Users:Cashier2:Password"] ?? "Cashiertest123.",
+                FirstName: config["Seed:Users:Cashier2:FirstName"] ?? "Cashier2",
+                LastName: config["Seed:Users:Cashier2:LastName"] ?? "User",
+                Phone: config["Seed:Users:Cashier2:Phone"] ?? "000000010"
+            ),
+            new SeedUser(
+                Role: UserRole.Cashier,
+                Email: config["Seed:Users:Cashier3:Email"] ?? "cashier3@test.com",
+                Password: config["Seed:Users:Cashier3:Password"] ?? "Cashiertest123.",
+                FirstName: config["Seed:Users:Cashier3:FirstName"] ?? "Cashier3",
+                LastName: config["Seed:Users:Cashier3:LastName"] ?? "User",
+                Phone: config["Seed:Users:Cashier3:Phone"] ?? "000000011"
+            ),
+            new SeedUser(
                 Role: UserRole.Customer,
                 Email: config["Seed:Users:Customer:Email"] ?? "customer@test.com",
                 Password: config["Seed:Users:Customer:Password"] ?? "Customertest123.",
                 FirstName: config["Seed:Users:Customer:FirstName"] ?? "Customer",
                 LastName: config["Seed:Users:Customer:LastName"] ?? "User",
                 Phone: config["Seed:Users:Customer:Phone"] ?? "000000002"
-            )
+            ),
+            new SeedUser(
+                Role: UserRole.Customer,
+                Email: "john.doe@test.com",
+                Password: "Customertest123.",
+                FirstName: "John",
+                LastName: "Doe",
+                Phone: "555-0001"
+            ),
+            new SeedUser(
+                Role: UserRole.Customer,
+                Email: "jane.smith@test.com",
+                Password: "Customertest123.",
+                FirstName: "Jane",
+                LastName: "Smith",
+                Phone: "555-0002"
+            ),
+            new SeedUser(
+                Role: UserRole.Customer,
+                Email: "bob.wilson@test.com",
+                Password: "Customertest123.",
+                FirstName: "Bob",
+                LastName: "Wilson",
+                Phone: "555-0003"
+            ),
+            new SeedUser(
+                Role: UserRole.Customer,
+                Email: "alice.johnson@test.com",
+                Password: "Customertest123.",
+                FirstName: "Alice",
+                LastName: "Johnson",
+                Phone: "555-0004"
+            ),
         };
 
         foreach (var su in usersToSeed)
