@@ -8337,7 +8337,7 @@
     ]
   },
   "packageFolders": {
-    "/home/liburnlumani/.nuget/packages/": {}
+    "/tmp/cursor-sandbox-cache/a46414fe420b1981b1178fd4b39ce657/nuget": {}
   },
   "project": {
     "version": "1.0.0",
@@ -8345,7 +8345,7 @@
       "projectUniqueName": "/home/liburnlumani/UNI/SoftwareEngineering/tankr-backend/TankR.csproj",
       "projectName": "TankR",
       "projectPath": "/home/liburnlumani/UNI/SoftwareEngineering/tankr-backend/TankR.csproj",
-      "packagesPath": "/home/liburnlumani/.nuget/packages/",
+      "packagesPath": "/tmp/cursor-sandbox-cache/a46414fe420b1981b1178fd4b39ce657/nuget",
       "outputPath": "/home/liburnlumani/UNI/SoftwareEngineering/tankr-backend/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [

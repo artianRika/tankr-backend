@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using TankR.Data.Dtos;
 using TankR.Data.Models;
 using TankR.Repos.Interfaces;
+using TankR.Services;
 
 namespace TankR.Controllers;
 
@@ -13,11 +14,13 @@ namespace TankR.Controllers;
 public class UserController : ControllerBase
 {
     private readonly IUserRepo _userRepo;
+    private readonly ITransactionRepo _transactionRepo;
     private readonly IMapper _mapper;
 
-    public UserController(IUserRepo userRepo, IMapper mapper)
+    public UserController(IUserRepo userRepo, ITransactionRepo transactionRepo, IMapper mapper)
     {
         _userRepo = userRepo;
+        _transactionRepo = transactionRepo;
         _mapper = mapper;
     }
 
@@ -56,6 +59,66 @@ public class UserController : ControllerBase
                 return NotFound();
 
             return Ok(_mapper.Map<UserDetailsDto>(user));
+        }
+        catch (Exception e)
+        {
+            return Problem(
+                detail: e.Message,
+                statusCode: StatusCodes.Status500InternalServerError
+            );
+        }
+    }
+
+    [Authorize]
+    [HttpGet("me/loyalty")]
+    public async Task<ActionResult<LoyaltySummaryDto>> GetMyLoyalty()
+    {
+        try
+        {
+            var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(identityUserId))
+                return Unauthorized();
+
+            var user = await _userRepo.GetByIdentityId(identityUserId);
+            if (user == null)
+                return NotFound();
+
+            var transactions = (await _transactionRepo.GetByUser(user.Id))?.ToList() ?? [];
+
+            var history = new List<LoyaltyHistoryEntryDto>();
+            foreach (var tx in transactions)
+            {
+                if (tx.PointsRedeemed > 0)
+                {
+                    history.Add(new LoyaltyHistoryEntryDto
+                    {
+                        Type = "Redeemed",
+                        Points = tx.PointsRedeemed,
+                        DiscountMkd = tx.LoyaltyDiscountMkd,
+                        TransactionId = tx.Id,
+                        CreatedAt = tx.CreatedAt
+                    });
+                }
+
+                if (tx.PointsEarned > 0)
+                {
+                    history.Add(new LoyaltyHistoryEntryDto
+                    {
+                        Type = "Earned",
+                        Points = tx.PointsEarned,
+                        TransactionId = tx.Id,
+                        CreatedAt = tx.CreatedAt
+                    });
+                }
+            }
+
+            return Ok(new LoyaltySummaryDto
+            {
+                Balance = user.LoyaltyPoints,
+                PointsPerDiscountBlock = LoyaltyRules.PointsPerDiscountBlock,
+                DiscountMkdPerBlock = LoyaltyRules.DiscountMkdPerBlock,
+                History = history.OrderByDescending(h => h.CreatedAt)
+            });
         }
         catch (Exception e)
         {
