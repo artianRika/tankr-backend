@@ -15,12 +15,13 @@ namespace TankR.Tests;
 public class UserControllerTests
 {
     private readonly Mock<IUserRepo> _userRepo = new();
+    private readonly Mock<ITransactionRepo> _transactionRepo = new();
     private readonly Mock<IMapper> _mapper = new();
     private readonly UserController _controller;
 
     public UserControllerTests()
     {
-        _controller = new UserController(_userRepo.Object, _mapper.Object);
+        _controller = new UserController(_userRepo.Object, _transactionRepo.Object, _mapper.Object);
         _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
     }
 
